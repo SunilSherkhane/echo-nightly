@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.UNMETERED_STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
+import dev.brahmkshatriya.echo.playback.automix.Automix
 import dev.brahmkshatriya.echo.playback.loudness.CrossfadeAudioProcessor
 import dev.brahmkshatriya.echo.playback.loudness.CrossfadeController
 import dev.brahmkshatriya.echo.playback.loudness.LoudnessController
@@ -229,6 +230,48 @@ class SettingsPlayerFragment : BaseSettingsFragment() {
                     summary = getString(R.string.crossfade_duration_summary)
                     isIconSpaceReserved = false
                     setDefaultValue(CrossfadeAudioProcessor.DEFAULT_DURATION_MS)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = Automix.KEY_ENABLED
+                    title = getString(R.string.automix)
+                    summary = getString(R.string.automix_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(
+                    context, Automix.MIN_LOOKAHEAD, Automix.MAX_LOOKAHEAD
+                ).apply {
+                    key = Automix.KEY_LOOKAHEAD
+                    title = getString(R.string.automix_lookahead)
+                    summary = getString(R.string.automix_lookahead_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(Automix.DEFAULT_LOOKAHEAD)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(context, Automix.MIN_BATCH, Automix.MAX_BATCH).apply {
+                    key = Automix.KEY_BATCH
+                    title = getString(R.string.automix_batch)
+                    summary = getString(R.string.automix_batch_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(Automix.DEFAULT_BATCH)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(
+                    context, CrossfadeController.MIN_DURATION_MS,
+                    CrossfadeController.MAX_DURATION_MS
+                ).apply {
+                    key = CrossfadeController.KEY_DJ_TRANSITION
+                    title = getString(R.string.dj_transition)
+                    summary = getString(R.string.dj_transition_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(CrossfadeController.DEFAULT_DJ_TRANSITION_MS)
                     addPreference(this)
                 }
             }

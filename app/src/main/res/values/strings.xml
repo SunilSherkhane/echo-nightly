@@ -157,6 +157,18 @@
     <string name="crossfade_duration">Crossfade Duration</string>
     <string name="crossfade_duration_summary">How long the two tracks overlap, in milliseconds</string>
 
+    <string name="automix">Smart Automix</string>
+    <string name="automix_summary">Keep the queue topped up with tracks that match what is playing</string>
+
+    <string name="automix_lookahead">Automix Lookahead</string>
+    <string name="automix_lookahead_summary">Refill the queue once this many tracks are left</string>
+
+    <string name="automix_batch">Automix Batch Size</string>
+    <string name="automix_batch_summary">How many tracks to add at a time</string>
+
+    <string name="dj_transition">DJ Transition</string>
+    <string name="dj_transition_summary">Crossfade length used between automix tracks, in milliseconds</string>
+
     <string name="version">Version</string>
     <string name="select_language">Select Language</string>
     <string name="system">System</string>

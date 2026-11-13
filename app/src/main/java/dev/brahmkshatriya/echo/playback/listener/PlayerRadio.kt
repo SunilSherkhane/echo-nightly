@@ -22,6 +22,8 @@ import dev.brahmkshatriya.echo.playback.MediaItemUtils.context
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.extensionId
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
 import dev.brahmkshatriya.echo.playback.PlayerState
+import dev.brahmkshatriya.echo.playback.automix.Automix
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -37,7 +39,8 @@ class PlayerRadio(
     private val throwFlow: MutableSharedFlow<Throwable>,
     private val stateFlow: MutableStateFlow<PlayerState.Radio>,
     private val extensionList: StateFlow<List<MusicExtension>>,
-    private val downloadFlow: StateFlow<List<Downloader.Info>>
+    private val downloadFlow: StateFlow<List<Downloader.Info>>,
+    private val crossfade: CrossfadeController,
 ) : Player.Listener {
 
     companion object {
@@ -63,7 +66,8 @@ class PlayerRadio(
             downloadFlow: StateFlow<List<Downloader.Info>>,
             app: App,
             stateFlow: MutableStateFlow<PlayerState.Radio>,
-            loaded: PlayerState.Radio.Loaded
+            loaded: PlayerState.Radio.Loaded,
+            crossfade: CrossfadeController,
         ) {
             stateFlow.value = PlayerState.Radio.Loading
             val tracks = loaded.tracks(loaded.cont) ?: return
@@ -71,7 +75,22 @@ class PlayerRadio(
             stateFlow.value = if (tracks.continuation == null) PlayerState.Radio.Empty
             else loaded.copy(cont = tracks.continuation)
 
-            val item = tracks.data.map {
+            val automix = app.settings.getBoolean(Automix.KEY_ENABLED, false)
+            val selected = if (automix) {
+                val current = withContext(Dispatchers.Main) { player.currentMediaItem?.track }
+                val queued = withContext(Dispatchers.Main) {
+                    (0 until player.mediaItemCount)
+                        .mapNotNull { player.getMediaItemAt(it).track }
+                }
+                Automix.select(
+                    tracks.data,
+                    current,
+                    queued,
+                    app.settings.getInt(Automix.KEY_BATCH, Automix.DEFAULT_BATCH)
+                )
+            } else tracks.data
+
+            val item = selected.map {
                 MediaItemUtils.build(
                     app,
                     downloadFlow.value,
@@ -80,6 +99,9 @@ class PlayerRadio(
                 )
             }
 
+            // Automix appends are not something the listener asked for, so they
+            // get the longer DJ blend rather than the plain crossfade.
+            crossfade.apply(automix)
             withContext(Dispatchers.Main) {
                 player.addMediaItems(item)
                 player.prepare()
@@ -96,7 +118,7 @@ class PlayerRadio(
         val extension = extensionList.getExtension(extensionId) ?: return
         val loaded = start(throwFlow, extension, item, itemContext)
         stateFlow.value = loaded ?: PlayerState.Radio.Empty
-        if (loaded != null) play(player, downloadFlow, app, stateFlow, loaded)
+        if (loaded != null) play(player, downloadFlow, app, stateFlow, loaded, crossfade)
     }
 
     private var autoStartRadio = app.settings.getBoolean(AUTO_START_RADIO, true)
@@ -110,18 +132,29 @@ class PlayerRadio(
         app.settings.registerOnSharedPreferenceChangeListener(listener)
     }
 
+    private val automixEnabled: Boolean
+        get() = app.settings.getBoolean(Automix.KEY_ENABLED, false)
+
+    private val automixLookahead: Int
+        get() = app.settings.getInt(Automix.KEY_LOOKAHEAD, Automix.DEFAULT_LOOKAHEAD)
+
     private suspend fun startRadio() {
         if (!autoStartRadio) return
         val shouldNotStart = withContext(Dispatchers.Main) {
             player.run {
-                currentMediaItem == null || repeatMode != REPEAT_MODE_OFF || hasNextMediaItem()
+                if (currentMediaItem == null || repeatMode != REPEAT_MODE_OFF) return@run true
+                // Automix tops the queue up before it runs dry; plain radio waits
+                // until the queue is actually empty.
+                if (automixEnabled) {
+                    mediaItemCount - currentMediaItemIndex - 1 >= automixLookahead
+                } else hasNextMediaItem()
             }
         }
         if (shouldNotStart) return
         when (val state = stateFlow.value) {
             is PlayerState.Radio.Loading -> {}
             is PlayerState.Radio.Empty -> loadPlaylist()
-            is PlayerState.Radio.Loaded -> play(player, downloadFlow, app, stateFlow, state)
+            is PlayerState.Radio.Loaded -> play(player, downloadFlow, app, stateFlow, state, crossfade)
         }
     }
 

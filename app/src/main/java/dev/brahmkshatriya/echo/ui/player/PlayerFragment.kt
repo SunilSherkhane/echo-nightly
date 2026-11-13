@@ -84,7 +84,9 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.marquee
 import dev.brahmkshatriya.echo.utils.ui.UiUtils.toTimeString
 import dev.brahmkshatriya.echo.utils.ui.ViewPager2Utils.registerOnUserPageChangeCallback
 import dev.brahmkshatriya.echo.utils.ui.ViewPager2Utils.supportBottomSheetBehavior
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.math.abs
 import kotlin.math.max
@@ -494,9 +496,18 @@ class PlayerFragment : Fragment() {
                 last = drawable
                 val context = requireContext()
                 uiViewModel.playerDrawable.value = drawable
-                val colors =
-                    if (context.isDynamic()) context.getColorsFrom(drawable?.toBitmap()) else null
-                uiViewModel.playerColors.value = colors
+                val trackId = viewModel.playerState.current.value?.track?.id
+                // Palette extraction is bitmap work; keep it off the main thread
+                // and only publish the result if the track is still current.
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+                    val colors = if (context.isDynamic())
+                        context.getColorsFrom(drawable?.toBitmap(), trackId) else null
+                    withContext(Dispatchers.Main) {
+                        if (viewModel.playerState.current.value?.track?.id == trackId) {
+                            uiViewModel.playerColors.value = colors
+                        }
+                    }
+                }
                 if (context.showBackground()) binding?.bgImage?.loadBlurred(drawable, 12f)
                 else binding?.bgImage?.setImageDrawable(null)
             }

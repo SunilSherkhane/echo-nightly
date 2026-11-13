@@ -26,6 +26,7 @@ class CrossfadeAudioProcessor : BaseAudioProcessor() {
     @Volatile var durationMs: Int = DEFAULT_DURATION_MS
 
     private var channels = 0
+    private var sampleRate = 0
     private var tailFrames = 0
     private var fadeFrames = 1
 
@@ -39,6 +40,7 @@ class CrossfadeAudioProcessor : BaseAudioProcessor() {
 
     override fun onConfigure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
         channels = inputAudioFormat.channelCount.coerceAtLeast(1)
+        sampleRate = inputAudioFormat.sampleRate
         tailFrames = durationMs * inputAudioFormat.sampleRate / 1000
         fadeFrames = tailFrames.coerceAtLeast(1)
         ring = ShortArray(tailFrames * channels)
@@ -53,6 +55,7 @@ class CrossfadeAudioProcessor : BaseAudioProcessor() {
     }
 
     override fun queueInput(inputBuffer: ByteBuffer) {
+        ensureRing()
         val byteCount = inputBuffer.remaining()
         val output = replaceOutputBuffer(byteCount)
         val frameCount = byteCount / (2 * channels)
@@ -88,6 +91,18 @@ class CrossfadeAudioProcessor : BaseAudioProcessor() {
         }
 
         output.flip()
+    }
+
+    /** Re-sizes the tail window when the duration setting changes at runtime. */
+    private fun ensureRing() {
+        if (channels == 0) return
+        val desired = durationMs * sampleRate / 1000 * channels
+        if (desired == ring.size) return
+        ring = ShortArray(desired)
+        tailFrames = desired / channels
+        fadeFrames = tailFrames.coerceAtLeast(1)
+        ringPosition = 0
+        ringFull = false
     }
 
     override fun onFlush() {

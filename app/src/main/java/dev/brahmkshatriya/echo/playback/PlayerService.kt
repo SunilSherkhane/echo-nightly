@@ -109,7 +109,7 @@ class PlayerService : MediaLibraryService() {
         }
 
         val callback = PlayerCallback(
-            app, scope, app.throwFlow, extensions, state.radio, downloadFlow
+            app, scope, app.throwFlow, extensions, state.radio, downloadFlow, crossfadeController
         )
 
         val session = MediaLibrarySession.Builder(this, player, callback)
@@ -124,7 +124,8 @@ class PlayerService : MediaLibraryService() {
         player.addListener(ScrobbleListener(this, scope, session))
         player.addListener(
             PlayerRadio(
-                app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow
+                app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow,
+                crossfadeController
             )
         )
         player.addListener(

@@ -55,6 +55,7 @@ import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverShuffle
 import dev.brahmkshatriya.echo.playback.ResumptionUtils.recoverTracks
 import dev.brahmkshatriya.echo.playback.exceptions.PlayerException
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeController
 import dev.brahmkshatriya.echo.utils.CoroutineUtils.future
 import dev.brahmkshatriya.echo.utils.Serializer.getSerialized
 import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadDrawable
@@ -77,6 +78,7 @@ class PlayerCallback(
     private val extensions: ExtensionLoader,
     private val radioFlow: MutableStateFlow<PlayerState.Radio>,
     override val downloadFlow: StateFlow<List<Downloader.Info>>,
+    private val crossfade: CrossfadeController,
 ) : AndroidAutoCallback(app, scope, extensions.music, downloadFlow) {
 
     override fun onConnect(
@@ -184,7 +186,7 @@ class PlayerCallback(
             clearMediaItems()
             shuffleModeEnabled = false
         }
-        PlayerRadio.play(player, downloadFlow, app, radioFlow, loaded)
+        PlayerRadio.play(player, downloadFlow, app, radioFlow, loaded, crossfade)
         player.with { play() }
         SessionResult(RESULT_SUCCESS)
     }

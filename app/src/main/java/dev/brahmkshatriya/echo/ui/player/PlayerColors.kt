@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.ui.player
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.LruCache
 import androidx.palette.graphics.Palette
 import com.google.android.material.color.MaterialColors
 import dev.brahmkshatriya.echo.MainActivity.Companion.isAmoled
@@ -14,9 +15,26 @@ data class PlayerColors(
     val onBackground: Int,
 ) {
     companion object {
-        fun Context.getColorsFrom(bitmap: Bitmap?): PlayerColors? {
+        // Palette only needs a thumbnail; extracting from a full-size cover is
+        // wasted work and used to hitch the UI on every track change.
+        private const val MAX_DIMENSION = 64
+        private val cache = object : LruCache<String, PlayerColors>(CACHE_SIZE) {}
+
+        /**
+         * Extracts player colours from [bitmap].
+         *
+         * Pass [cacheKey] to identify the artwork (a track id works well) so a
+         * track that comes back around does not pay for extraction twice.
+         */
+        fun Context.getColorsFrom(bitmap: Bitmap?, cacheKey: String? = null): PlayerColors? {
             bitmap ?: return null
-            val palette = Palette.from(bitmap).generate()
+            cacheKey?.let { key -> cache.get(key)?.let { return it } }
+            val colors = build(Palette.from(bitmap.downsample()).generate())
+            if (colors != null) cacheKey?.let { key -> cache.put(key, colors) }
+            return colors
+        }
+
+        private fun Context.build(palette: Palette): PlayerColors? {
             return if (!isAmoled()) {
                 val lightMode = !isNightMode()
                 val lightSwatch = palette.run {
@@ -52,7 +70,18 @@ data class PlayerColors(
         }
 
         fun getDominantColor(bitmap: Bitmap): Int {
-            return Palette.from(bitmap).generate().getDominantColor(0)
+            return Palette.from(bitmap.downsample()).generate().getDominantColor(0)
         }
+
+        private fun Bitmap.downsample(): Bitmap {
+            val largest = maxOf(width, height)
+            if (largest <= MAX_DIMENSION) return this
+            val scale = MAX_DIMENSION.toFloat() / largest
+            val width = (width * scale).toInt().coerceAtLeast(1)
+            val height = (height * scale).toInt().coerceAtLeast(1)
+            return Bitmap.createScaledBitmap(this, width, height, true)
+        }
+
+        private const val CACHE_SIZE = 32
     }
 }

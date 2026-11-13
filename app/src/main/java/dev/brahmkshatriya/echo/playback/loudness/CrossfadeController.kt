@@ -22,17 +22,30 @@ class CrossfadeController(
             putInt(KEY_DURATION, value.coerceIn(MIN_DURATION_MS, MAX_DURATION_MS))
         }
 
+    /**
+     * Overlap used for automix transitions. Automix reaches for a longer blend
+     * than a manual skip because the listener did not ask for the change.
+     */
+    var djTransitionMs: Int
+        get() = settings.getInt(KEY_DJ_TRANSITION, DEFAULT_DJ_TRANSITION_MS)
+        set(value) = settings.edit {
+            putInt(KEY_DJ_TRANSITION, value.coerceIn(MIN_DURATION_MS, MAX_DURATION_MS))
+        }
+
     /** Pushes the current settings into the processor. */
-    fun apply() {
+    fun apply(automix: Boolean = false) {
         processor.enabled = enabled
-        processor.durationMs = durationMs
+        processor.durationMs =
+            if (automix) maxOf(durationMs, djTransitionMs) else durationMs
     }
 
     companion object {
         const val KEY_ENABLED = "crossfade_enabled"
         const val KEY_DURATION = "crossfade_duration"
+        const val KEY_DJ_TRANSITION = "dj_transition_ms"
 
         const val DEFAULT_ENABLED = false
+        const val DEFAULT_DJ_TRANSITION_MS = 2500
         const val MIN_DURATION_MS = CrossfadeAudioProcessor.MIN_DURATION_MS
         const val MAX_DURATION_MS = CrossfadeAudioProcessor.MAX_DURATION_MS
     }
