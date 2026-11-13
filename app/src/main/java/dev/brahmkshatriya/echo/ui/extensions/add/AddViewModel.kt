@@ -6,6 +6,7 @@ import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.awa
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.extensions.exceptions.InvalidExtensionListException
+import dev.brahmkshatriya.echo.extensions.repo.ExtensionVerifier
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.utils.AppUpdater.downloadUpdate
 import dev.brahmkshatriya.echo.utils.AppUpdater.getUpdateFileUrl
@@ -50,11 +51,25 @@ class AddViewModel(
             val request = Request.Builder()
                 .addHeader("Cookie", "preview=1")
                 .url(link).build()
-            client.newCall(request).await().body.string()
-                .toData<List<ExtensionAssetResponse>>().getOrThrow()
+            client.newCall(request).await().use { response ->
+                // A redirect to a cleartext URL must not be allowed to carry the
+                // extension list: it controls every updateUrl we then fetch.
+                val scheme = response.request.url.scheme
+                if (!scheme.equals("https", ignoreCase = true)) {
+                    throw InvalidExtensionListException(
+                        link,
+                        Exception(
+                            "Refusing to load an extension list over insecure " +
+                                "$scheme:// (${response.request.url})"
+                        )
+                    )
+                }
+                response.body.string()
+                    .toData<List<ExtensionAssetResponse>>().getOrThrow()
+            }
+        }.getOrElse {
+            throw InvalidExtensionListException(link, it)
         }
-    }.getOrElse {
-        throw InvalidExtensionListException(link, it)
     }
 
     @Serializable
@@ -63,7 +78,8 @@ class AddViewModel(
         val name: String,
         val subtitle: String? = null,
         val iconUrl: String? = null,
-        val updateUrl: String
+        val updateUrl: String,
+        val sha256: String? = null
     )
 
     sealed class AddState {
@@ -79,7 +95,17 @@ class AddViewModel(
     fun addFromLinkOrCode(link: String) = viewModelScope.launch {
         addingFlow.value = AddState.Loading
         val actualLink = when {
-            link.startsWith("http://") or link.startsWith("https://") -> link
+            link.startsWith("https://") -> link
+            link.startsWith("http://") -> {
+                app.throwFlow.emit(
+                    IllegalArgumentException(
+                        "Insecure http:// extension links are not allowed, use https://"
+                    )
+                )
+                addingFlow.value = AddState.Init
+                return@launch
+            }
+
             else -> "https://v.gd/$link"
         }
 
@@ -110,10 +136,24 @@ class AddViewModel(
                 app.throwFlow.emit(it)
                 null
             } ?: return@mapNotNull null
-            downloadUpdate(app.context, url, client).getOrElse {
+            val file = downloadUpdate(app.context, url, client).getOrElse {
                 app.throwFlow.emit(it)
                 null
+            } ?: return@mapNotNull null
+            val sha256 = item.sha256
+            if (sha256?.isNotBlank() == true) {
+                val verified = runCatching {
+                    ExtensionVerifier(app.context).verify(file, item.id, sha256)
+                }
+                if (verified.isFailure) {
+                    app.throwFlow.emit(
+                        verified.exceptionOrNull()
+                            ?: Exception("Extension integrity check failed")
+                    )
+                    return@mapNotNull null
+                }
             }
+            file
         }
         extensionsViewModel.installWithPrompt(files)
         addingFlow.value = AddState.Final(files)

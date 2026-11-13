@@ -664,10 +664,13 @@ class UnifiedExtension(
         if (item !is Track) throw ClientException.NotSupported("LikeItem only supports Track")
         val likedPlaylist = db.getLikedPlaylist(context)
         val tracks = loadTracks(likedPlaylist).loadAll()
-        if (shouldLike) addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(item))
-        else removeTracksFromPlaylist(
-            likedPlaylist, tracks, listOf(tracks.indexOfFirst { it.id == item.id })
-        )
+        if (shouldLike) {
+            addTracksToPlaylist(likedPlaylist, tracks, 0, listOf(item))
+        } else {
+            val index = tracks.indexOfFirst { it.id == item.id }
+            if (index == -1) return // not liked, nothing to remove
+            removeTracksFromPlaylist(likedPlaylist, tracks, listOf(index))
+        }
     }
 
     override suspend fun isItemLiked(item: EchoMediaItem): Boolean {

@@ -101,7 +101,8 @@ object WebViewUtils {
         val interceptRegex =
             if (target is WebViewRequest.Headers) target.interceptUrlRegex else null
         val timeout = target.maxTimeout
-        val bridge = Bridge()
+        val webView = this
+        val bridge = Bridge { isTrustedPage(webView, stopRegex) }
         val requests = mutableListOf<NetworkRequest>()
         val timeoutJob = if (!skipTimeout) scope.launch {
             delay(timeout)
@@ -255,19 +256,26 @@ object WebViewUtils {
     }
 
     @Suppress("unused")
-    class Bridge {
+    class Bridge(private val isTrusted: () -> Boolean) {
         var onError: ((Throwable) -> Unit)? = null
         var onResult: ((String?) -> Unit)? = null
 
         @JavascriptInterface
         fun putJsResult(result: String?) {
-            onResult?.invoke(result)
+            // Only the page the extension declared as its stop URL may report a
+            // result; a redirected or injected page must not be able to forge one.
+            if (isTrusted()) onResult?.invoke(result)
         }
 
         @JavascriptInterface
         fun putJsError(error: String?) {
-            onError?.invoke(Exception(error ?: "Unknown JavaScript error"))
+            if (isTrusted()) onError?.invoke(Exception(error ?: "Unknown JavaScript error"))
         }
+    }
+
+    private fun isTrustedPage(view: WebView, stopRegex: Regex): Boolean {
+        val url = runCatching { view.url }.getOrNull() ?: return false
+        return stopRegex.find(url) != null
     }
 
     fun FragmentActivity.onWebViewIntent(

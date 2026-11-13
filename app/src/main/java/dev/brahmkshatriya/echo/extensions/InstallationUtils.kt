@@ -9,6 +9,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import dev.brahmkshatriya.echo.extensions.repo.ExtensionParser.Companion.PACKAGE_FLAGS
+import dev.brahmkshatriya.echo.extensions.repo.ExtensionVerifier
 import dev.brahmkshatriya.echo.extensions.repo.FileRepository.Companion.getExtensionsFileDir
 import dev.brahmkshatriya.echo.utils.ContextUtils.getTempFile
 import dev.brahmkshatriya.echo.utils.PermsUtils.registerActivityResultLauncher
@@ -41,14 +42,20 @@ object InstallationUtils {
     suspend fun installFile(
         context: Context, fileIgnoreFlow: MutableSharedFlow<File?>, id: String, tempFile: File
     ) {
+        // Block unsigned or re-signed extension APKs before they reach the load path.
+        ExtensionVerifier(context).verify(tempFile, id)
+
         val dir = context.getExtensionsFileDir()
-        val newFile = File(dir, "$id.apk")
+        // The id comes from an untrusted APK manifest: never use it raw as a path.
+        val safeId = id.replace(Regex("[^A-Za-z0-9._-]"), "_").ifBlank { "extension" }
+        val newFile = File(dir, "$safeId.apk")
         dir.setWritable(true)
         newFile.setWritable(true)
         if (newFile.exists())
             if (!newFile.delete())
                 throw IllegalStateException("Failed to delete existing file: $newFile")
-        tempFile.renameTo(newFile)
+        if (!tempFile.renameTo(newFile))
+            throw IllegalStateException("Failed to move extension into place: $newFile")
         newFile.setWritable(false)
         dir.setReadOnly()
         fileIgnoreFlow.emit(null)

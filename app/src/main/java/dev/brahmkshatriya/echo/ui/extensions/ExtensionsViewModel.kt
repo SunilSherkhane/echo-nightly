@@ -103,7 +103,15 @@ class ExtensionsViewModel(
             if (appApk != null) {
                 activity.saveToCache("last_update_check", 0)
                 awaitInstallation(appApk).getOrThrow()
-            } else extensionLoader.all.value.forEach { updateExt(it) }
+            } else {
+                // Download updates, then let the user approve each install instead of
+                // silently replacing code that is already loaded in this process.
+                val files = mutableListOf<File>()
+                extensionLoader.all.value.forEach { ext ->
+                    getExtensionUpdate(ext, false)?.let { files.add(it) }
+                }
+                if (files.isNotEmpty()) installWithPrompt(files)
+            }
         }.getOrElse { app.throwFlow.emit(it) }
     }
 
