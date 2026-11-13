@@ -42,7 +42,7 @@ object AppUpdater {
 
                 "nightly" -> {
                     val hash = version.substringBefore("(").substringAfter('_')
-                    val id = getGithubWorkflowId(hash, githubRepo, client) ?: return null
+                    val id = getGithubWorkflowId(hash, githubRepo, client)
                     "https://nightly.link/$githubRepo/actions/runs/$id/artifact.zip"
                 }
 
@@ -101,14 +101,21 @@ object AppUpdater {
         hash: String,
         githubRepo: String,
         client: OkHttpClient
-    ) = runCatching {
+    ): Long {
+        // `conclusion` is not a real query filter on this endpoint — GitHub
+        // ignores it. Filtering client-side matters: picking a failed or
+        // still-running run means nightly.link has no artifact for it, and the
+        // download then returns an HTML page instead of a ZIP.
         val url =
-            "https://api.github.com/repos/$githubRepo/actions/workflows/nightly.yml/runs?per_page=1&conclusion=success"
+            "https://api.github.com/repos/$githubRepo/actions/workflows/nightly.yml/runs?per_page=10"
         val request = Request.Builder().url(url).build()
-        client.newCall(request).await().body.string().toData<GithubRunsResponse>().getOrThrow()
-            .workflowRuns.firstOrNull { it.sha.take(7) != hash }?.id
-    }.getOrElse {
-        throw Exception("Failed to fetch workflow ID", it)
+        val runs = runCatching {
+            client.newCall(request).await().body.string()
+                .toData<GithubRunsResponse>().getOrThrow().workflowRuns
+        }.getOrElse { throw Exception("Failed to fetch workflow ID", it) }
+
+        return runs.firstOrNull { it.conclusion == "success" && it.sha.take(7) != hash }?.id
+            ?: throw Exception("No successful nightly build newer than $hash")
     }
 
     @Serializable
@@ -137,6 +144,7 @@ object AppUpdater {
             val id: Long,
             @SerialName("head_sha")
             val sha: String,
+            val conclusion: String? = null,
         )
     }
 
@@ -146,13 +154,27 @@ object AppUpdater {
         client: OkHttpClient
     ) = runIOCatching {
         val request = Request.Builder().url(url).build()
-        val res = client.newCall(request).await().body.byteStream()
-        val file = context.getTempFile()
-        res.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-        file
+        client.newCall(request).await().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("server returned HTTP ${response.code}")
+            }
+            val bytes = response.body.bytes()
+            // Everything downloaded here is a ZIP (an APK or an artifact zip).
+            // Without this check an HTML error page gets written to disk and the
+            // later ZipFile() call dies with "zip END header not found".
+            if (!bytes.hasZipMagic()) {
+                throw Exception("server returned ${bytes.size} bytes, not a ZIP archive")
+            }
+            val file = context.getTempFile()
+            file.writeBytes(bytes)
+            file
+        }
     }
 
     private fun unzipApk(file: File): File {
+        if (!file.hasZipMagic()) {
+            throw Exception("downloaded update is not a valid ZIP archive")
+        }
         val zipFile = ZipFile(file)
         val apkFile = File.createTempFile("temp", ".apk", file.parentFile!!)
         zipFile.use { zip ->
@@ -167,6 +189,13 @@ object AppUpdater {
         }
         return apkFile
     }
+
+    private fun ByteArray.hasZipMagic(): Boolean =
+        size >= 2 && this[0] == ZIP_MAGIC_0.toByte() && this[1] == ZIP_MAGIC_1.toByte()
+
+    private fun File.hasZipMagic(): Boolean = runCatching {
+        inputStream().use { it.read() == ZIP_MAGIC_0 && it.read() == ZIP_MAGIC_1 }
+    }.getOrDefault(false)
 
     suspend fun getUpdateFileUrl(
         currentVersion: String,
@@ -191,4 +220,8 @@ object AppUpdater {
         override val message: String
             get() = "Update failed: ${cause.message}"
     }
+
+    // "PK" — every ZIP archive, including an APK, starts with this.
+    private const val ZIP_MAGIC_0 = 0x50
+    private const val ZIP_MAGIC_1 = 0x4B
 }
