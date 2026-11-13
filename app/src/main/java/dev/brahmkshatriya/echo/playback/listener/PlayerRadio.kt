@@ -132,6 +132,10 @@ class PlayerRadio(
         app.settings.registerOnSharedPreferenceChangeListener(listener)
     }
 
+    fun release() {
+        app.settings.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
     private val automixEnabled: Boolean
         get() = app.settings.getBoolean(Automix.KEY_ENABLED, false)
 

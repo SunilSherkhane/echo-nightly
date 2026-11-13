@@ -41,6 +41,9 @@ class PlayerUiListener(
 
     private val delay = 500L
     private val threshold = 0.2f
+    // Buffering still needs a tick so the progress bar advances, but paused
+    // playback does not -- it used to repost itself twice a second forever.
+    private val bufferDelay = 1000L
     private val updateProgressRunnable = Runnable { updateProgress() }
     private val handler = Handler(Looper.getMainLooper()).also {
         it.post(updateProgressRunnable)
@@ -53,17 +56,14 @@ class PlayerUiListener(
 
         handler.removeCallbacks(updateProgressRunnable)
         val playbackState = player.playbackState
-        if (playbackState != ExoPlayer.STATE_IDLE && playbackState != ExoPlayer.STATE_ENDED) {
-            var delayMs: Long
-            if (player.playWhenReady && playbackState == ExoPlayer.STATE_READY) {
-                delayMs = delay - player.currentPosition % delay
-                if (delayMs < delay * threshold) {
-                    delayMs += delay
-                }
-            } else {
-                delayMs = delay
+        if (player.playWhenReady && playbackState == ExoPlayer.STATE_READY) {
+            var delayMs: Long = delay - player.currentPosition % delay
+            if (delayMs < delay * threshold) {
+                delayMs += delay
             }
             handler.postDelayed(updateProgressRunnable, delayMs)
+        } else if (playbackState == ExoPlayer.STATE_BUFFERING) {
+            handler.postDelayed(updateProgressRunnable, bufferDelay)
         }
     }
 
@@ -83,6 +83,8 @@ class PlayerUiListener(
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         viewModel.isPlaying.value = isPlaying
+        // Restarts the tick after a pause, which deliberately let it stop.
+        updateProgress()
     }
 
     override fun onPositionDiscontinuity(

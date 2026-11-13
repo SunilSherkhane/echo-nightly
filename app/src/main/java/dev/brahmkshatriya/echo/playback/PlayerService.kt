@@ -54,6 +54,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.listenFuture
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -95,6 +96,9 @@ class PlayerService : MediaLibraryService() {
     private val crossfadeController by lazy { CrossfadeController(this, crossfadeProcessor) }
     private val loudnessScanner by lazy { LoudnessScanner(this, scope, loudnessStore) }
 
+    private var enhancements: AudioEnhancementsListener? = null
+    private var radio: PlayerRadio? = null
+
     private val downloader by inject<Downloader>()
     private val downloadFlow by lazy { downloader.flow }
 
@@ -122,21 +126,21 @@ class PlayerService : MediaLibraryService() {
             PlayerEventListener(this, scope, session, state.current, extensions, app.throwFlow)
         )
         player.addListener(ScrobbleListener(this, scope, session))
-        player.addListener(
-            PlayerRadio(
-                app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow,
-                crossfadeController
-            )
+        val radioListener = PlayerRadio(
+            app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow,
+            crossfadeController
         )
+        radio = radioListener
+        player.addListener(radioListener)
         player.addListener(
             TrackingListener(player, scope, extensions, state.current, app.throwFlow)
         )
         player.addListener(effects)
-        player.addListener(
-            AudioEnhancementsListener(
-                this, loudnessController, crossfadeController, loudnessScanner
-            )
+        val enhancementsListener = AudioEnhancementsListener(
+            this, exoPlayer, loudnessController, crossfadeController, loudnessScanner
         )
+        enhancements = enhancementsListener
+        player.addListener(enhancementsListener)
         app.settings.registerOnSharedPreferenceChangeListener(listener)
 
         val notificationProvider = DefaultMediaNotificationProvider.Builder(this)
@@ -154,6 +158,12 @@ class PlayerService : MediaLibraryService() {
             release()
             mediaSession = null
         }
+        // The service scope outlived the session otherwise, keeping the media
+        // change collector and every launched job alive for no reason.
+        enhancements?.release()
+        radio?.release()
+        app.settings.unregisterOnSharedPreferenceChangeListener(listener)
+        scope.cancel()
         super.onDestroy()
     }
 

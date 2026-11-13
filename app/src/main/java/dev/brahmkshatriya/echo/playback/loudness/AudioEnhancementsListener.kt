@@ -2,8 +2,10 @@ package dev.brahmkshatriya.echo.playback.loudness
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.downloaded
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.track
@@ -21,6 +23,7 @@ import java.io.File
  */
 class AudioEnhancementsListener(
     context: Context,
+    private val player: ExoPlayer,
     private val loudness: LoudnessController,
     private val crossfade: CrossfadeController,
     private val scanner: LoudnessScanner? = null,
@@ -28,6 +31,7 @@ class AudioEnhancementsListener(
 
     private val settings = context.getSettings()
     private var lastTrack: Track? = null
+    private var lastWakeMode: Int? = null
 
     private fun automixEnabled() = settings.getBoolean(Automix.KEY_ENABLED, false)
 
@@ -40,6 +44,15 @@ class AudioEnhancementsListener(
         lastTrack = mediaItem?.track
         crossfade.apply(automixEnabled())
         loudness.apply(lastTrack)
+
+        // Local playback does not need the network wake lock, and holding it
+        // anyway keeps the radio on for the entire track.
+        val local = !mediaItem?.downloaded.isNullOrEmpty()
+        val wakeMode = if (local) C.WAKE_MODE_LOCAL else C.WAKE_MODE_NETWORK
+        if (lastWakeMode != wakeMode) {
+            lastWakeMode = wakeMode
+            player.setWakeMode(wakeMode)
+        }
 
         val path = mediaItem?.downloaded?.firstOrNull() ?: return
         scanner?.scan(mediaItem.mediaId, File(path))
@@ -56,5 +69,9 @@ class AudioEnhancementsListener(
             LoudnessController.KEY_TARGET,
             LoudnessController.KEY_PREAMP -> loudness.apply(lastTrack)
         }
+    }
+
+    fun release() {
+        settings.unregisterOnSharedPreferenceChangeListener(this)
     }
 }
