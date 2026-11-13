@@ -123,7 +123,7 @@ abstract class AndroidAutoCallback(
             ARTIST -> extension.getList<ArtistClient> {
                 val id = parentId.substringAfter("$ARTIST/").substringBefore("/")
                 val artist = loadArtist(Artist(id, ""))
-                loadFeed(artist).toMediaItems(artist.id, context, extId, page)
+                loadFeed(artist).toMediaItems(context, extId, parentId, page)
             }
 
             LIST -> extension.getList<ExtensionClient> {
@@ -137,16 +137,26 @@ abstract class AndroidAutoCallback(
             }
 
             HOME -> extension.getFeed<HomeFeedClient>(
-                context, parentId, HOME, page
+                context, extId, parentId, page
             ) { loadHomeFeed() }
 
             LIBRARY -> extension.getFeed<LibraryFeedClient>(
-                context, parentId, LIBRARY, page
+                context, extId, parentId, page
             ) { loadLibraryFeed() }
 
             SEARCH -> extension.getFeed<SearchFeedClient>(
-                context, parentId, SEARCH, page
+                context, extId, parentId, page
             ) { loadSearchFeed(searchQuery) }
+
+            FEED -> {
+                // Reached from a Shelf.Category or a list's "More" button.
+                val id = parentId.substringAfter("$FEED/").substringBefore("/")
+                val feed = feedMap[id]
+                if (feed == null) errorIo
+                else extension.getList<ExtensionClient> {
+                    feed.toMediaItems(context, extId, parentId, page)
+                }
+            }
 
             else -> LibraryResult.ofItemList(
                 listOfNotNull(
@@ -395,23 +405,35 @@ abstract class AndroidAutoCallback(
         }
 
         private val feedMap = WeakHashMap<String, Feed<Shelf>>()
-        private suspend fun Feed<Shelf>.toMediaItems(
-            id: String, context: Context, extId: String, page: Int
-        ): List<MediaItem> {
-            val id = "${id.hashCode()}"
-            feedMap[id] = this
-            //TODO
-            return listOf()
+
+        /**
+         * Loads a single page of this feed's shelves.
+         *
+         * A feed's tabs are alternative views of the same content and Android
+         * Auto has no tab UI, so the first tab is used -- the same choice
+         * [getTracks] makes for albums and playlists.
+         */
+        private suspend fun Feed<Shelf>.loadShelfPage(
+            key: String, page: Int
+        ): List<Shelf> {
+            val (list, next) = getPagedData(tabs.firstOrNull()).pagedData
+                .loadPage(continuations[key to page])
+            continuations[key to page + 1] = next
+            return list
         }
+
+        private suspend fun Feed<Shelf>.toMediaItems(
+            context: Context, extId: String, key: String, page: Int
+        ): List<MediaItem> = loadShelfPage(key, page).map { it.toMediaItem(context, extId) }
 
         private suspend inline fun <reified T> Extension<*>.getFeed(
             context: Context,
+            extId: String,
             parentId: String,
-            page: String,
             pageNumber: Int,
-            getFeed: T.() -> Feed<Shelf>
+            loadFeed: T.() -> Feed<Shelf>
         ) = getList<T> {
-            TODO()
+            loadFeed().toMediaItems(context, extId, parentId, pageNumber)
         }
 
         private val tracksMap = WeakHashMap<String, Pair<EchoMediaItem, PagedData<Track>>>()
