@@ -52,8 +52,15 @@
         <item name="itemCoverSize">128dp</item>
     </style>
 
-    <!-- Liquid glass: frosted, refractive chrome over the cover art. -->
+    <!-- Liquid glass: translucent, layered material over the content behind it. -->
     <style name="LiquidGlass" parent="Default">
+        <!-- Translucent, so the cover art behind the window is part of the
+             material instead of being hidden by an opaque surface. -->
+        <item name="echoBackground">@color/glass_window</item>
+        <item name="android:windowBackground">@color/glass_window</item>
+        <item name="colorSurface">@color/glass_fill_strong</item>
+        <item name="colorOnSurface">@color/glass_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/glass_on_surface_variant</item>
         <item name="navBackground">@color/glass_fill_strong</item>
         <item name="cardViewStyle">@style/EchoGlassCardView</item>
         <item name="appBarLayoutStyle">@style/EchoGlassAppBarLayout</item>
@@ -61,14 +68,30 @@
         <item name="materialAlertDialogTheme">@style/EchoGlassAlertDialog</item>
         <item name="bottomSheetDialogTheme">@style/EchoGlassBottomSheetDialog</item>
         <item name="snackbarStyle">@style/EchoGlassSnackBar</item>
+        <item name="snackbarTextViewStyle">@style/EchoGlassSnackBarText</item>
     </style>
 
     <style name="LiquidGlassBigCover" parent="LiquidGlass">
         <item name="itemCoverSize">128dp</item>
     </style>
 
+    <style name="LiquidGlassAmoled" parent="LiquidGlass">
+        <item name="echoBackground">@color/black</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="colorSurface">@color/black</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">#FFB0B4BC</item>
+    </style>
+
+    <style name="LiquidGlassAmoledBigCover" parent="LiquidGlassAmoled">
+        <item name="itemCoverSize">128dp</item>
+    </style>
+
     <!-- Glassmorphic: the default white frost. -->
     <style name="Glassmorphic" parent="Default">
+        <item name="colorSurface">@color/glassmorph_fill_strong</item>
+        <item name="colorOnSurface">@color/glass_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/glass_on_surface_variant</item>
         <item name="navBackground">@color/glassmorph_fill_strong</item>
         <item name="cardViewStyle">@style/EchoGlassmorphicCardView</item>
         <item name="appBarLayoutStyle">@style/EchoGlassmorphicAppBarLayout</item>
@@ -76,9 +99,35 @@
         <item name="materialAlertDialogTheme">@style/EchoGlassmorphicAlertDialog</item>
         <item name="bottomSheetDialogTheme">@style/EchoGlassmorphicBottomSheetDialog</item>
         <item name="snackbarStyle">@style/EchoGlassmorphicSnackBar</item>
+        <item name="snackbarTextViewStyle">@style/EchoGlassmorphicSnackBarText</item>
     </style>
 
     <style name="GlassmorphicBigCover" parent="Glassmorphic">
         <item name="itemCoverSize">128dp</item>
+    </style>
+
+    <style name="GlassmorphicAmoled" parent="Glassmorphic">
+        <item name="echoBackground">@color/black</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="colorSurface">@color/black</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurfaceVariant">#FFB0B4BC</item>
+    </style>
+
+    <style name="GlassmorphicAmoledBigCover" parent="GlassmorphicAmoled">
+        <item name="itemCoverSize">128dp</item>
+    </style>
+
+    <!-- Corner radius overlays, applied on top of the style at runtime. -->
+    <style name="CornerSharp">
+        <item name="itemCorner">4dp</item>
+    </style>
+
+    <style name="CornerDefault">
+        <item name="itemCorner">8dp</item>
+    </style>
+
+    <style name="CornerRound">
+        <item name="itemCorner">20dp</item>
     </style>
 </resources>

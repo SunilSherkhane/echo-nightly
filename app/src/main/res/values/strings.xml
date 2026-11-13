@@ -173,7 +173,7 @@
     <string name="select_language">Select Language</string>
     <string name="system">System</string>
     <string name="check_for_updates">Check for Updates</string>
-    <string name="check_for_updates_summary">Look for new updates of both app and extensions, when you open the app.</string>
+    <string name="check_for_updates_summary">Look for new extension updates, when you open the app.</string>
 
     <string name="install">Install</string>
     <string name="app">App</string>
@@ -215,6 +215,12 @@
         <item>@string/style_glass</item>
     </string-array>
 
+    <string-array name="corner_radii">
+        <item>@string/corner_sharp</item>
+        <item>@string/corner_default</item>
+        <item>@string/corner_round</item>
+    </string-array>
+
     <string name="custom_theme_color">Custom Theme Color</string>
     <string name="custom_theme_color_summary">Use a custom theme color, instead of system theme.</string>
     <string name="add_color">Add color</string>
@@ -227,6 +233,13 @@
     <string name="style_material">Material</string>
     <string name="style_liquid">Liquid</string>
     <string name="style_glass">Glassmorphic</string>
+    <string name="dynamic_color">Dynamic Color</string>
+    <string name="dynamic_color_summary">Tint the app from your wallpaper or the chosen color</string>
+    <string name="corner_radius">Corner Radius</string>
+    <string name="corner_radius_summary">Round off covers, cards and shelves</string>
+    <string name="corner_sharp">Sharp</string>
+    <string name="corner_default">Default</string>
+    <string name="corner_round">Round</string>
 
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>

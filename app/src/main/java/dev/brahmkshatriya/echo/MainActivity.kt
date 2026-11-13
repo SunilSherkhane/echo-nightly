@@ -42,9 +42,11 @@ open class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(getAppTheme())
-        DynamicColors.applyToActivityIfAvailable(
-            this, applyUiChanges(this, uiViewModel)
-        )
+        applyCornerOverlay()
+        val dynamicOptions = applyUiChanges(this, uiViewModel)
+        if (getSettings().getBoolean(DYNAMIC_COLOR_KEY, true)) {
+            DynamicColors.applyToActivityIfAvailable(this, dynamicOptions)
+        }
 
         setContentView(binding.root)
 
@@ -79,14 +81,25 @@ open class MainActivity : AppCompatActivity() {
         const val UI_STYLE_LIQUID = "liquid"
         const val UI_STYLE_GLASS = "glass"
 
+        const val CORNER_KEY = "corner_radius"
+        const val CORNER_SHARP = "sharp"
+        const val CORNER_DEFAULT = "default"
+        const val CORNER_ROUND = "round"
+
+        const val DYNAMIC_COLOR_KEY = "dynamic_color"
+
         fun Context.getAppTheme(): Int {
             val settings = getSettings()
             val style = settings.getString(UI_STYLE_KEY, UI_STYLE_GLASS)
             val bigCover = settings.getBoolean(BIG_COVER, false)
             val amoled = settings.getBoolean(AMOLED_KEY, false)
             return when (style) {
-                UI_STYLE_LIQUID ->
-                    if (bigCover) R.style.LiquidGlassBigCover else R.style.LiquidGlass
+                UI_STYLE_LIQUID -> when {
+                    amoled && bigCover -> R.style.LiquidGlassAmoledBigCover
+                    amoled -> R.style.LiquidGlassAmoled
+                    bigCover -> R.style.LiquidGlassBigCover
+                    else -> R.style.LiquidGlass
+                }
 
                 UI_STYLE_MATERIAL -> when {
                     amoled && bigCover -> R.style.AmoledBigCover
@@ -96,9 +109,24 @@ open class MainActivity : AppCompatActivity() {
                 }
 
                 // White frost is the default interface style.
-                else ->
-                    if (bigCover) R.style.GlassmorphicBigCover else R.style.Glassmorphic
+                else -> when {
+                    amoled && bigCover -> R.style.GlassmorphicAmoledBigCover
+                    amoled -> R.style.GlassmorphicAmoled
+                    bigCover -> R.style.GlassmorphicBigCover
+                    else -> R.style.Glassmorphic
+                }
             }
+        }
+
+        /** Corner radius overlay, layered on top of the style once it is set. */
+        fun Context.applyCornerOverlay() {
+            val corner = getSettings().getString(CORNER_KEY, CORNER_DEFAULT)
+            val overlay = when (corner) {
+                CORNER_SHARP -> R.style.CornerSharp
+                CORNER_ROUND -> R.style.CornerRound
+                else -> R.style.CornerDefault
+            }
+            theme.applyStyle(overlay, true)
         }
 
         /** True when the active style uses translucent surfaces (and window blur). */

@@ -9,9 +9,10 @@
 <resources>
 
     <!-- Surface fills. Light theme: white material, fairly opaque, because a
-         light backdrop gives glass very little to refract. -->
-    <color name="glass_fill">#8CFFFFFF</color>
-    <color name="glass_fill_strong">#BFFFFFFF</color>
+         light backdrop gives glass very little to refract. Cards sit at 85% so
+         they read as panes over the 60% window backdrop. -->
+    <color name="glass_fill">#D9FFFFFF</color>
+    <color name="glass_fill_strong">#F2FFFFFF</color>
 
     <!-- 1dp edge + top specular rim. The rim is what sells the material. -->
     <color name="glass_border">#66FFFFFF</color>
@@ -19,6 +20,16 @@
 
     <!-- Legibility scrim for text sitting directly on artwork. -->
     <color name="glass_scrim">#24000000</color>
+
+    <!-- Window backdrop for the liquid style. Translucent, so the wallpaper and
+         the cover art behind a translucent window still read as layered glass,
+         but strong enough that the explicit on-surface colors stay legible. -->
+    <color name="glass_window">#99FFFFFF</color>
+
+    <!-- Text on frost. Declared per appearance so a translucent surface never
+         inherits a color that clashes with it. -->
+    <color name="glass_on_surface">#FF16181C</color>
+    <color name="glass_on_surface_variant">#FF4A5160</color>
 
     <dimen name="glass_corner">20dp</dimen>
     <dimen name="glass_corner_small">14dp</dimen>

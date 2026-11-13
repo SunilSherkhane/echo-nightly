@@ -24,7 +24,6 @@ import dev.brahmkshatriya.echo.ui.extensions.ExtensionInstallerBottomSheet.Compa
 import dev.brahmkshatriya.echo.ui.extensions.list.ExtensionListViewModel
 import dev.brahmkshatriya.echo.utils.AppUpdater.downloadUpdate
 import dev.brahmkshatriya.echo.utils.AppUpdater.getUpdateFileUrl
-import dev.brahmkshatriya.echo.utils.AppUpdater.updateApp
 import dev.brahmkshatriya.echo.utils.CacheUtils.getFromCache
 import dev.brahmkshatriya.echo.utils.CacheUtils.saveToCache
 import dev.brahmkshatriya.echo.utils.ContextUtils.cleanupTempApks
@@ -98,20 +97,16 @@ class ExtensionsViewModel(
         activity.saveToCache("last_update_check", System.currentTimeMillis())
         activity.cleanupTempApks()
         message(app.context.getString(R.string.checking_for_updates))
-        val appApk = updateApp(app)
+        // Extensions only. Echo is updated by the store or by the APK the user
+        // installed, so there is no in-app app update any more.
         runCatching {
-            if (appApk != null) {
-                activity.saveToCache("last_update_check", 0)
-                awaitInstallation(appApk).getOrThrow()
-            } else {
-                // Download updates, then let the user approve each install instead of
-                // silently replacing code that is already loaded in this process.
-                val files = mutableListOf<File>()
-                extensionLoader.all.value.forEach { ext ->
-                    getExtensionUpdate(ext, false)?.let { files.add(it) }
-                }
-                if (files.isNotEmpty()) installWithPrompt(files)
+            // Download updates, then let the user approve each install instead of
+            // silently replacing code that is already loaded in this process.
+            val files = mutableListOf<File>()
+            extensionLoader.all.value.forEach { ext ->
+                getExtensionUpdate(ext, false)?.let { files.add(it) }
             }
+            if (files.isNotEmpty()) installWithPrompt(files)
         }.getOrElse { app.throwFlow.emit(it) }
     }
 

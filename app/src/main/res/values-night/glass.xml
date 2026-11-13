@@ -2,13 +2,18 @@
 <!-- Liquid glass tokens, dark appearance: thin light material over dark content. -->
 <resources>
 
-    <color name="glass_fill">#29FFFFFF</color>
-    <color name="glass_fill_strong">#42FFFFFF</color>
+    <color name="glass_fill">#59FFFFFF</color>
+    <color name="glass_fill_strong">#73FFFFFF</color>
 
     <color name="glass_border">#38FFFFFF</color>
     <color name="glass_rim">#B3FFFFFF</color>
 
     <color name="glass_scrim">#99000000</color>
+
+    <color name="glass_window">#991B1B1F</color>
+
+    <color name="glass_on_surface">#FFF2F3F5</color>
+    <color name="glass_on_surface_variant">#FFB9BFC9</color>
 
     <!-- Dark frost. A white panel in dark mode would leave light text
          unreadable, so the frost darkens and keeps a light specular edge. -->

@@ -16,7 +16,12 @@ import dev.brahmkshatriya.echo.MainActivity.Companion.AMOLED_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.BACK_ANIM
 import dev.brahmkshatriya.echo.MainActivity.Companion.BIG_COVER
 import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.CORNER_DEFAULT
+import dev.brahmkshatriya.echo.MainActivity.Companion.CORNER_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.CORNER_ROUND
+import dev.brahmkshatriya.echo.MainActivity.Companion.CORNER_SHARP
 import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.DYNAMIC_COLOR_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_GLASS
 import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_LIQUID
@@ -104,6 +109,28 @@ class SettingsLookFragment : BaseSettingsFragment() {
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = DYNAMIC_COLOR_KEY
+                    title = getString(R.string.dynamic_color)
+                    summary = getString(R.string.dynamic_color_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(true)
+                    addPreference(this)
+                }
+
+                MaterialListPreference(context).apply {
+                    key = CORNER_KEY
+                    title = getString(R.string.corner_radius)
+                    summary = getString(R.string.corner_radius_summary)
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    entries = context.resources.getStringArray(R.array.corner_radii)
+                    entryValues = arrayOf(CORNER_SHARP, CORNER_DEFAULT, CORNER_ROUND)
+                    value = preferences.getString(CORNER_KEY, CORNER_DEFAULT)
                     addPreference(this)
                 }
 
@@ -232,7 +259,8 @@ class SettingsLookFragment : BaseSettingsFragment() {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
                 THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY, UI_STYLE_KEY,
-                BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT,
+                BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT, DYNAMIC_COLOR_KEY,
+                CORNER_KEY,
                     -> {
                     requireActivity().recreate()
                 }

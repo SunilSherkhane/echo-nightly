@@ -559,6 +559,11 @@ class PlayerFragment : Fragment() {
                 trackTotalTime.setTextColor(colors.onBackground)
                 trackTitle.setTextColor(colors.onBackground)
                 trackArtist.setTextColor(colors.onBackground)
+                // These two were pinned to the day/night foreground, so they went
+                // invisible whenever the artwork-derived background was dark in
+                // light mode (or light in dark mode).
+                trackSubtitle.setTextColor(colors.onBackground)
+                trackRepeat.iconTint = ColorStateList.valueOf(colors.onBackground)
             }
         }
     }

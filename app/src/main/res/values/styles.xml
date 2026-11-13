@@ -412,7 +412,7 @@
     </style>
 
     <style name="EchoGlassAppBarLayout" parent="EchoAppBarLayout">
-        <item name="android:background">@drawable/glass_surface</item>
+        <item name="android:background">@drawable/glass_bar</item>
     </style>
 
     <style name="EchoGlassBottomSheetDialog" parent="EchoBottomSheetDialog">
@@ -439,6 +439,13 @@
         <item name="backgroundTint">@color/glass_fill_strong</item>
     </style>
 
+    <!-- The snackbar background is frosted light, but Material's snackbar text
+         defaults to colorOnSurfaceInverse, which is light in light mode. Without
+         this the text disappears into the frost. -->
+    <style name="EchoGlassSnackBarText" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/glass_on_surface</item>
+    </style>
+
     <!-- ===================== Glassmorphic (white frost) ===================== -->
 
     <style name="EchoGlassmorphicCardView" parent="EchoCardView">
@@ -450,7 +457,7 @@
     </style>
 
     <style name="EchoGlassmorphicAppBarLayout" parent="EchoAppBarLayout">
-        <item name="android:background">@drawable/glassmorph_surface</item>
+        <item name="android:background">@drawable/glassmorph_bar</item>
     </style>
 
     <style name="EchoGlassmorphicBottomSheetDialog" parent="EchoBottomSheetDialog">
@@ -475,5 +482,9 @@
 
     <style name="EchoGlassmorphicSnackBar" parent="EchoSnackBar">
         <item name="backgroundTint">@color/glassmorph_fill_strong</item>
+    </style>
+
+    <style name="EchoGlassmorphicSnackBarText" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/glass_on_surface</item>
     </style>
 </resources>
