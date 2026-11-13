@@ -26,4 +26,11 @@
     <!-- Backdrop blur radius applied to sheet/dialog windows on API 31+. -->
     <dimen name="glass_blur_radius">24dp</dimen>
 
+    <!-- Glassmorphic: white frost. Bright, high-opacity white material. -->
+    <color name="glassmorph_fill">#D9FFFFFF</color>
+    <color name="glassmorph_fill_strong">#F2FFFFFF</color>
+    <color name="glassmorph_border">#99FFFFFF</color>
+    <color name="glassmorph_rim">#FFFFFFFF</color>
+    <color name="glassmorph_scrim">#1F000000</color>
+
 </resources>

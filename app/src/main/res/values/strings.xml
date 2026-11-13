@@ -172,6 +172,12 @@
         <item>System</item>
     </string-array>
 
+    <string-array name="ui_styles">
+        <item>@string/style_material</item>
+        <item>@string/style_liquid</item>
+        <item>@string/style_glass</item>
+    </string-array>
+
     <string name="custom_theme_color">Custom Theme Color</string>
     <string name="custom_theme_color_summary">Use a custom theme color, instead of system theme.</string>
     <string name="add_color">Add color</string>
@@ -179,8 +185,11 @@
 
     <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Pitch Black, Pure Black</string>
-    <string name="glass">Liquid Glass</string>
-    <string name="glass_summary">Frosted, refractive surfaces over the artwork</string>
+    <string name="ui_style">Interface Style</string>
+    <string name="ui_style_summary">Material, Liquid or Glassmorphic</string>
+    <string name="style_material">Material</string>
+    <string name="style_liquid">Liquid</string>
+    <string name="style_glass">Glassmorphic</string>
 
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>

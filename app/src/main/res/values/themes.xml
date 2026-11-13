@@ -66,4 +66,19 @@
     <style name="LiquidGlassBigCover" parent="LiquidGlass">
         <item name="itemCoverSize">128dp</item>
     </style>
+
+    <!-- Glassmorphic: the default white frost. -->
+    <style name="Glassmorphic" parent="Default">
+        <item name="navBackground">@color/glassmorph_fill_strong</item>
+        <item name="cardViewStyle">@style/EchoGlassmorphicCardView</item>
+        <item name="appBarLayoutStyle">@style/EchoGlassmorphicAppBarLayout</item>
+        <item name="android:dialogTheme">@style/EchoGlassmorphicDialog</item>
+        <item name="materialAlertDialogTheme">@style/EchoGlassmorphicAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/EchoGlassmorphicBottomSheetDialog</item>
+        <item name="snackbarStyle">@style/EchoGlassmorphicSnackBar</item>
+    </style>
+
+    <style name="GlassmorphicBigCover" parent="Glassmorphic">
+        <item name="itemCoverSize">128dp</item>
+    </style>
 </resources>

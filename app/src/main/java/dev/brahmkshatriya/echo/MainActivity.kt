@@ -70,24 +70,41 @@ open class MainActivity : AppCompatActivity() {
     companion object {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
-        const val GLASS_KEY = "glass"
         const val BIG_COVER = "big_cover"
         const val CUSTOM_THEME_KEY = "custom_theme"
         const val COLOR_KEY = "color"
 
+        const val UI_STYLE_KEY = "ui_style"
+        const val UI_STYLE_MATERIAL = "material"
+        const val UI_STYLE_LIQUID = "liquid"
+        const val UI_STYLE_GLASS = "glass"
+
         fun Context.getAppTheme(): Int {
             val settings = getSettings()
+            val style = settings.getString(UI_STYLE_KEY, UI_STYLE_GLASS)
             val bigCover = settings.getBoolean(BIG_COVER, false)
             val amoled = settings.getBoolean(AMOLED_KEY, false)
-            val glass = settings.getBoolean(GLASS_KEY, false)
-            return when {
-                glass && bigCover -> R.style.LiquidGlassBigCover
-                glass -> R.style.LiquidGlass
-                amoled && bigCover -> R.style.AmoledBigCover
-                amoled -> R.style.Amoled
-                bigCover -> R.style.BigCover
-                else -> R.style.Default
+            return when (style) {
+                UI_STYLE_LIQUID ->
+                    if (bigCover) R.style.LiquidGlassBigCover else R.style.LiquidGlass
+
+                UI_STYLE_MATERIAL -> when {
+                    amoled && bigCover -> R.style.AmoledBigCover
+                    amoled -> R.style.Amoled
+                    bigCover -> R.style.BigCover
+                    else -> R.style.Default
+                }
+
+                // White frost is the default interface style.
+                else ->
+                    if (bigCover) R.style.GlassmorphicBigCover else R.style.Glassmorphic
             }
+        }
+
+        /** True when the active style uses translucent surfaces (and window blur). */
+        fun Context.isGlassStyle(): Boolean {
+            val style = getSettings().getString(UI_STYLE_KEY, UI_STYLE_GLASS)
+            return style == UI_STYLE_LIQUID || style == UI_STYLE_GLASS
         }
 
         fun Context.defaultColor() =

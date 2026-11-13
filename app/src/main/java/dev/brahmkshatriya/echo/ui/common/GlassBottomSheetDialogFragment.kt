@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.MainActivity.Companion.isGlassStyle
 import dev.brahmkshatriya.echo.utils.GlassBlur
 
 /**
@@ -20,7 +21,11 @@ open class GlassBottomSheetDialogFragment : BottomSheetDialogFragment {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
-        dialog.window?.let { GlassBlur.apply(it) }
+        // Only the translucent styles blur the content behind the sheet;
+        // the Material style keeps its stock look.
+        if (requireContext().isGlassStyle()) {
+            dialog.window?.let { GlassBlur.apply(it) }
+        }
         return dialog
     }
 }

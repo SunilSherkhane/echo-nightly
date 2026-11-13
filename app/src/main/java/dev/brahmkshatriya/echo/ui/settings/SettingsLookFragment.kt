@@ -17,7 +17,10 @@ import dev.brahmkshatriya.echo.MainActivity.Companion.BACK_ANIM
 import dev.brahmkshatriya.echo.MainActivity.Companion.BIG_COVER
 import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
-import dev.brahmkshatriya.echo.MainActivity.Companion.GLASS_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_GLASS
+import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_LIQUID
+import dev.brahmkshatriya.echo.MainActivity.Companion.UI_STYLE_MATERIAL
 import dev.brahmkshatriya.echo.MainActivity.Companion.THEME_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
@@ -104,13 +107,17 @@ class SettingsLookFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                SwitchPreferenceCompat(context).apply {
-                    key = GLASS_KEY
-                    title = getString(R.string.glass)
-                    summary = getString(R.string.glass_summary)
-                    layoutResource = R.layout.preference_switch
+                MaterialListPreference(context).apply {
+                    key = UI_STYLE_KEY
+                    title = getString(R.string.ui_style)
+                    summary = getString(R.string.ui_style_summary)
+                    layoutResource = R.layout.preference
                     isIconSpaceReserved = false
-                    setDefaultValue(false)
+                    entries = context.resources.getStringArray(R.array.ui_styles)
+                    entryValues = arrayOf(
+                        UI_STYLE_MATERIAL, UI_STYLE_LIQUID, UI_STYLE_GLASS
+                    )
+                    value = preferences.getString(UI_STYLE_KEY, UI_STYLE_GLASS)
                     addPreference(this)
                 }
 
@@ -224,7 +231,7 @@ class SettingsLookFragment : BaseSettingsFragment() {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY, GLASS_KEY,
+                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY, UI_STYLE_KEY,
                 BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT,
                     -> {
                     requireActivity().recreate()

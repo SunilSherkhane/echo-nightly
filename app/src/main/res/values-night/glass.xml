@@ -10,4 +10,12 @@
 
     <color name="glass_scrim">#99000000</color>
 
+    <!-- Dark frost. A white panel in dark mode would leave light text
+         unreadable, so the frost darkens and keeps a light specular edge. -->
+    <color name="glassmorph_fill">#CC232327</color>
+    <color name="glassmorph_fill_strong">#E6232327</color>
+    <color name="glassmorph_border">#4DFFFFFF</color>
+    <color name="glassmorph_rim">#99FFFFFF</color>
+    <color name="glassmorph_scrim">#66000000</color>
+
 </resources>
