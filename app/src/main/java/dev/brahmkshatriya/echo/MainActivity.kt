@@ -70,6 +70,7 @@ open class MainActivity : AppCompatActivity() {
     companion object {
         const val THEME_KEY = "theme"
         const val AMOLED_KEY = "amoled"
+        const val GLASS_KEY = "glass"
         const val BIG_COVER = "big_cover"
         const val CUSTOM_THEME_KEY = "custom_theme"
         const val COLOR_KEY = "color"
@@ -78,7 +79,10 @@ open class MainActivity : AppCompatActivity() {
             val settings = getSettings()
             val bigCover = settings.getBoolean(BIG_COVER, false)
             val amoled = settings.getBoolean(AMOLED_KEY, false)
+            val glass = settings.getBoolean(GLASS_KEY, false)
             return when {
+                glass && bigCover -> R.style.LiquidGlassBigCover
+                glass -> R.style.LiquidGlass
                 amoled && bigCover -> R.style.AmoledBigCover
                 amoled -> R.style.Amoled
                 bigCover -> R.style.BigCover

@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ConcatAdapter
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.databinding.DialogExtensionsAddListBinding
 import dev.brahmkshatriya.echo.ui.extensions.ExtensionsViewModel
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class ExtensionsAddListBottomSheet : BottomSheetDialogFragment() {
+class ExtensionsAddListBottomSheet : GlassBottomSheetDialogFragment() {
     var binding by autoCleared<DialogExtensionsAddListBinding>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

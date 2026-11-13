@@ -13,7 +13,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.MainApplication.Companion.getCurrentLanguage
 import dev.brahmkshatriya.echo.MainApplication.Companion.languages
@@ -44,7 +44,7 @@ import dev.brahmkshatriya.echo.utils.ui.UiUtils.configureBottomBar
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlin.random.Random
 
-class SettingsBottomSheet : BottomSheetDialogFragment(R.layout.dialog_settings) {
+class SettingsBottomSheet : GlassBottomSheetDialogFragment(R.layout.dialog_settings) {
     private val viewModel by activityViewModel<LoginUserListViewModel>()
     private val downloadVM by activityViewModel<DownloadViewModel>()
 

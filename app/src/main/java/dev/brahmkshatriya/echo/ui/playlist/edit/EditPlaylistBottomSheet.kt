@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Playlist
 import dev.brahmkshatriya.echo.databinding.ItemLoadingBinding
@@ -14,7 +14,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class EditPlaylistBottomSheet : BottomSheetDialogFragment(R.layout.item_loading) {
+class EditPlaylistBottomSheet : GlassBottomSheetDialogFragment(R.layout.item_loading) {
     companion object {
         fun newInstance(
             extensionId: String, playlist: Playlist, tabId: String?, index: Int

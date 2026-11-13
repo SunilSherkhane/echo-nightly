@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.PlaylistEditClient
@@ -45,7 +45,7 @@ import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class MediaMoreBottomSheet : BottomSheetDialogFragment(R.layout.dialog_media_more) {
+class MediaMoreBottomSheet : GlassBottomSheetDialogFragment(R.layout.dialog_media_more) {
     companion object {
         fun newInstance(
             contId: Int,

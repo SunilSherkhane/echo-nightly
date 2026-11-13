@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogPlaylistCreateBinding
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
@@ -13,7 +13,7 @@ import dev.brahmkshatriya.echo.utils.Serializer.putSerialized
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class CreatePlaylistBottomSheet : BottomSheetDialogFragment() {
+class CreatePlaylistBottomSheet : GlassBottomSheetDialogFragment() {
 
     var binding by autoCleared<DialogPlaylistCreateBinding>()
     val viewModel by viewModel<CreatePlaylistViewModel>()

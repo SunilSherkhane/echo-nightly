@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.edit
 import androidx.media3.common.C
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import dev.brahmkshatriya.echo.R
@@ -22,7 +22,7 @@ import dev.brahmkshatriya.echo.utils.ui.RulerAdapter
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.util.Calendar
 
-class SleepTimerBottomSheet : BottomSheetDialogFragment() {
+class SleepTimerBottomSheet : GlassBottomSheetDialogFragment() {
     var binding by autoCleared<DialogPlayerSleepTimerBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
 

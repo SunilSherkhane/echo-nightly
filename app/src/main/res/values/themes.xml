@@ -51,4 +51,19 @@
     <style name="AmoledBigCover" parent="Amoled">
         <item name="itemCoverSize">128dp</item>
     </style>
+
+    <!-- Liquid glass: frosted, refractive chrome over the cover art. -->
+    <style name="LiquidGlass" parent="Default">
+        <item name="navBackground">@color/glass_fill_strong</item>
+        <item name="cardViewStyle">@style/EchoGlassCardView</item>
+        <item name="appBarLayoutStyle">@style/EchoGlassAppBarLayout</item>
+        <item name="android:dialogTheme">@style/EchoGlassDialog</item>
+        <item name="materialAlertDialogTheme">@style/EchoGlassAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/EchoGlassBottomSheetDialog</item>
+        <item name="snackbarStyle">@style/EchoGlassSnackBar</item>
+    </style>
+
+    <style name="LiquidGlassBigCover" parent="LiquidGlass">
+        <item name="itemCoverSize">128dp</item>
+    </style>
 </resources>

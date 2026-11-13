@@ -17,6 +17,7 @@ import dev.brahmkshatriya.echo.MainActivity.Companion.BACK_ANIM
 import dev.brahmkshatriya.echo.MainActivity.Companion.BIG_COVER
 import dev.brahmkshatriya.echo.MainActivity.Companion.COLOR_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.CUSTOM_THEME_KEY
+import dev.brahmkshatriya.echo.MainActivity.Companion.GLASS_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.THEME_KEY
 import dev.brahmkshatriya.echo.MainActivity.Companion.defaultColor
 import dev.brahmkshatriya.echo.R
@@ -97,6 +98,16 @@ class SettingsLookFragment : BaseSettingsFragment() {
                     key = AMOLED_KEY
                     title = getString(R.string.amoled)
                     summary = getString(R.string.amoled_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = GLASS_KEY
+                    title = getString(R.string.glass)
+                    summary = getString(R.string.glass_summary)
                     layoutResource = R.layout.preference_switch
                     isIconSpaceReserved = false
                     setDefaultValue(false)
@@ -213,7 +224,7 @@ class SettingsLookFragment : BaseSettingsFragment() {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
-                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY,
+                THEME_KEY, CUSTOM_THEME_KEY, COLOR_KEY, AMOLED_KEY, GLASS_KEY,
                 BIG_COVER, NAVBAR_GRADIENT, BACKGROUND_GRADIENT,
                     -> {
                     requireActivity().recreate()

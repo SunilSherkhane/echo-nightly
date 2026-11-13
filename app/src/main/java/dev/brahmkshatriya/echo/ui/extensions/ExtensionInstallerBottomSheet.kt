@@ -13,7 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.ImportType
@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.io.File
 
-class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
+class ExtensionInstallerBottomSheet : GlassBottomSheetDialogFragment() {
 
     companion object {
         fun newInstance(

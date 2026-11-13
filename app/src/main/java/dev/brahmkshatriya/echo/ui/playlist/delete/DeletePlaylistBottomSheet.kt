@@ -5,7 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentActivity
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.Playlist
@@ -18,7 +18,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
 
-class DeletePlaylistBottomSheet : BottomSheetDialogFragment(R.layout.item_loading) {
+class DeletePlaylistBottomSheet : GlassBottomSheetDialogFragment(R.layout.item_loading) {
 
     companion object {
         fun show(

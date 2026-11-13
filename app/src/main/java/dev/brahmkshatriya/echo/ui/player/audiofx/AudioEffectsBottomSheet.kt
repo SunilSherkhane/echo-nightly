@@ -14,7 +14,7 @@ import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogPlayerAudioFxBinding
 import dev.brahmkshatriya.echo.databinding.FragmentAudioFxBinding
@@ -34,7 +34,7 @@ import dev.brahmkshatriya.echo.utils.ui.RulerAdapter
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-class AudioEffectsBottomSheet : BottomSheetDialogFragment() {
+class AudioEffectsBottomSheet : GlassBottomSheetDialogFragment() {
 
     var binding by autoCleared<DialogPlayerAudioFxBinding>()
 

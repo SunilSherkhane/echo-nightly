@@ -400,4 +400,42 @@
         <item name="layout_constraintTop_toTopOf">parent</item>
         <item name="layout_constraintWidth_max">@dimen/max_cover_size</item>
     </style>
+
+    <!-- ===================== Liquid glass ===================== -->
+
+    <style name="EchoGlassCardView" parent="EchoCardView">
+        <item name="cardBackgroundColor">@color/glass_fill</item>
+        <item name="cardCornerRadius">@dimen/glass_corner</item>
+        <item name="cardElevation">6dp</item>
+        <item name="strokeColor">@color/glass_border</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="EchoGlassAppBarLayout" parent="EchoAppBarLayout">
+        <item name="android:background">@drawable/glass_surface</item>
+    </style>
+
+    <style name="EchoGlassBottomSheetDialog" parent="EchoBottomSheetDialog">
+        <item name="bottomSheetStyle">@style/EchoGlassBottomSheetStyle</item>
+    </style>
+
+    <style name="EchoGlassBottomSheetStyle" parent="EchoBottomSheetStyle">
+        <item name="backgroundTint">@color/glass_fill_strong</item>
+    </style>
+
+    <style name="EchoGlassDialog" parent="EchoDialog">
+        <item name="android:windowBackground">@drawable/glass_surface_strong</item>
+    </style>
+
+    <style name="EchoGlassAlertDialog" parent="EchoAlertDialog">
+        <item name="alertDialogStyle">@style/EchoGlassDialogStyle</item>
+    </style>
+
+    <style name="EchoGlassDialogStyle" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundTint">@color/glass_fill_strong</item>
+    </style>
+
+    <style name="EchoGlassSnackBar" parent="EchoSnackBar">
+        <item name="backgroundTint">@color/glass_fill_strong</item>
+    </style>
 </resources>

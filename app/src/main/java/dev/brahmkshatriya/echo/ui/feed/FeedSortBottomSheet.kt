@@ -8,14 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import dev.brahmkshatriya.echo.databinding.DialogSortBinding
 import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class FeedSortBottomSheet : BottomSheetDialogFragment() {
+class FeedSortBottomSheet : GlassBottomSheetDialogFragment() {
 
     private val feedData by lazy {
         val vm by requireParentFragment().viewModel<FeedViewModel>()

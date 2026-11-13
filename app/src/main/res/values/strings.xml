@@ -179,6 +179,8 @@
 
     <string name="amoled">AMOLED</string>
     <string name="amoled_summary">Pitch Black, Pure Black</string>
+    <string name="glass">Liquid Glass</string>
+    <string name="glass_summary">Frosted, refractive surfaces over the artwork</string>
 
     <string name="navbar_gradient">Gradient Navbar</string>
     <string name="navbar_gradient_summary">Navbar gradually becomes transparent</string>

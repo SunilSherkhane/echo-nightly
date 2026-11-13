@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogExtensionAddBinding
 import dev.brahmkshatriya.echo.extensions.InstallationUtils.openFileSelector
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class ExtensionsAddBottomSheet : BottomSheetDialogFragment() {
+class ExtensionsAddBottomSheet : GlassBottomSheetDialogFragment() {
 
     var binding by autoCleared<DialogExtensionAddBinding>()
     override fun onCreateView(

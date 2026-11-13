@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Liquid glass token system.
+
+  Glass only reads as glass when it sits over something: the cover art, the
+  surface below it, the wallpaper. Every surface here is translucent by design,
+  so never "fix" a wash-out by raising the alpha — add a scrim instead.
+-->
+<resources>
+
+    <!-- Surface fills. Light theme: white material, fairly opaque, because a
+         light backdrop gives glass very little to refract. -->
+    <color name="glass_fill">#8CFFFFFF</color>
+    <color name="glass_fill_strong">#BFFFFFFF</color>
+
+    <!-- 1dp edge + top specular rim. The rim is what sells the material. -->
+    <color name="glass_border">#66FFFFFF</color>
+    <color name="glass_rim">#CCFFFFFF</color>
+
+    <!-- Legibility scrim for text sitting directly on artwork. -->
+    <color name="glass_scrim">#24000000</color>
+
+    <dimen name="glass_corner">20dp</dimen>
+    <dimen name="glass_corner_small">14dp</dimen>
+
+    <!-- Backdrop blur radius applied to sheet/dialog windows on API 31+. -->
+    <dimen name="glass_blur_radius">24dp</dimen>
+
+</resources>

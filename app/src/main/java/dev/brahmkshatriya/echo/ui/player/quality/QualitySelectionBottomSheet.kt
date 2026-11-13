@@ -13,7 +13,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import dev.brahmkshatriya.echo.R
@@ -36,7 +36,7 @@ import dev.brahmkshatriya.echo.utils.ContextUtils.observe
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-class QualitySelectionBottomSheet : BottomSheetDialogFragment() {
+class QualitySelectionBottomSheet : GlassBottomSheetDialogFragment() {
     var binding by autoCleared<DialogPlayerQualitySelectionBinding>()
     private val viewModel by activityViewModel<PlayerViewModel>()
 

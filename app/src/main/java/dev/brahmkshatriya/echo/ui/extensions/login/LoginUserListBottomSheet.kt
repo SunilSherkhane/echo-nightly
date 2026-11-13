@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dev.brahmkshatriya.echo.ui.common.GlassBottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.databinding.DialogLoginUserListBinding
@@ -18,7 +18,7 @@ import dev.brahmkshatriya.echo.utils.image.ImageUtils.loadAsCircle
 import dev.brahmkshatriya.echo.utils.ui.AutoClearedValue.Companion.autoCleared
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
-class LoginUserListBottomSheet : BottomSheetDialogFragment() {
+class LoginUserListBottomSheet : GlassBottomSheetDialogFragment() {
 
     var binding by autoCleared<DialogLoginUserListBinding>()
     val viewModel by activityViewModel<LoginUserListViewModel>()
