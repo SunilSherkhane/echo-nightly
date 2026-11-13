@@ -38,6 +38,7 @@ import dev.brahmkshatriya.echo.playback.listener.EffectsListener
 import dev.brahmkshatriya.echo.playback.listener.MediaSessionServiceListener
 import dev.brahmkshatriya.echo.playback.listener.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
+import dev.brahmkshatriya.echo.playback.listener.ScrobbleListener
 import dev.brahmkshatriya.echo.playback.listener.TrackingListener
 import dev.brahmkshatriya.echo.playback.renderer.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.renderer.RenderersFactory
@@ -104,6 +105,7 @@ class PlayerService : MediaLibraryService() {
         player.addListener(
             PlayerEventListener(this, scope, session, state.current, extensions, app.throwFlow)
         )
+        player.addListener(ScrobbleListener(this, scope, session))
         player.addListener(
             PlayerRadio(
                 app, scope, player, app.throwFlow, state.radio, extensions.music, downloadFlow

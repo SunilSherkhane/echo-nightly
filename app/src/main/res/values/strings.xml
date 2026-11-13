@@ -421,6 +421,21 @@
     <string name="no_account">No Account</string>
     <string name="other_settings">Other Settings</string>
 
+    <string name="lastfm">Last.fm</string>
+    <string name="lastfm_scrobble">Scrobble to Last.fm</string>
+    <string name="lastfm_scrobble_summary">Send now playing and scrobbles</string>
+    <string name="lastfm_username">Last.fm username</string>
+    <string name="lastfm_api_key">Last.fm API key</string>
+    <string name="lastfm_api_key_summary">Create one at last.fm/api</string>
+    <string name="lastfm_api_secret">Last.fm API secret</string>
+    <string name="lastfm_password">Last.fm password</string>
+    <string name="lastfm_connect">Connect account</string>
+    <string name="lastfm_connect_summary">Enter your password once to get a session key</string>
+    <string name="lastfm_disconnect">Disconnect</string>
+    <string name="lastfm_connected">Connected to Last.fm as %1$s</string>
+    <string name="lastfm_failed">Could not connect to Last.fm</string>
+    <string name="connect">Connect</string>
+
     <string name="no_x_found">No %1$s found</string>
     <string name="playlist">Playlist</string>
     <string name="album">Album</string>
