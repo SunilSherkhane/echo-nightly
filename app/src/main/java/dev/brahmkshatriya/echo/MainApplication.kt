@@ -21,6 +21,7 @@ import dev.brahmkshatriya.echo.di.DI
 import dev.brahmkshatriya.echo.extensions.ExtensionLoader
 import dev.brahmkshatriya.echo.utils.AppShortcuts.configureAppShortcuts
 import dev.brahmkshatriya.echo.utils.CoroutineUtils
+import dev.brahmkshatriya.echo.utils.crypto.SecretStores
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -42,6 +43,7 @@ class MainApplication : Application(), KoinStartup, SingletonImageLoader.Factory
 
     override fun onCreate() {
         super.onCreate()
+        SecretStores.init(this)
         CoroutineUtils.setDebug()
         applyLocale(settings)
         configureAppShortcuts(extensionLoader)

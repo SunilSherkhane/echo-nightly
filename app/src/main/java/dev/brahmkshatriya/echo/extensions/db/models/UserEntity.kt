@@ -5,6 +5,7 @@ import dev.brahmkshatriya.echo.common.models.ExtensionType
 import dev.brahmkshatriya.echo.common.models.User
 import dev.brahmkshatriya.echo.utils.Serializer.toData
 import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import dev.brahmkshatriya.echo.utils.crypto.SecretStores
 
 @Entity(primaryKeys = ["id", "type", "extId"])
 data class UserEntity(
@@ -13,11 +14,15 @@ data class UserEntity(
     val id: String,
     val data: String
 ) {
-    val user by lazy { data.toData<User>() }
+    // Encrypted at rest; legacy plaintext rows still decode.
+    val user by lazy {
+        val plain = SecretStores.current?.decrypt(data) ?: data
+        plain.toData<User>()
+    }
 
     companion object {
         fun User.toEntity(type: ExtensionType, clientId: String) =
-            UserEntity(type, clientId, id, toJson())
+            UserEntity(type, clientId, id, SecretStores.current?.encrypt(toJson()) ?: toJson())
 
         fun UserEntity.toCurrentUser() =
             CurrentUser(type, extId, id)

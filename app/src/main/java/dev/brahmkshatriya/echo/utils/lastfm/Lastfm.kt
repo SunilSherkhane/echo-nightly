@@ -6,6 +6,8 @@ import dev.brahmkshatriya.echo.common.helpers.ContinuationCallback.Companion.awa
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.utils.ContextUtils.getSettings
 import dev.brahmkshatriya.echo.utils.Serializer.toData
+import dev.brahmkshatriya.echo.utils.Serializer.toJson
+import dev.brahmkshatriya.echo.utils.crypto.SecretStores
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -115,11 +117,21 @@ class LastfmClient(private val apiKey: String, private val apiSecret: String) {
     }
 }
 
+/** Everything needed to scrobble, persisted as one encrypted blob. */
+@Serializable
+data class LastfmCredentials(
+    val apiKey: String = "",
+    val apiSecret: String = "",
+    val username: String = "",
+    val sessionKey: String = ""
+)
+
 /**
  * Stores the Last.fm account and submits now-playing / scrobble updates.
  *
- * Only the session key is persisted -- the password is used once at connect
- * time and never written to disk.
+ * The whole credential set -- including the session key and API secret -- is
+ * held in a single AES-GCM encrypted preference via [SecretStores]. The
+ * password is used once at connect time and never written to disk.
  */
 class LastfmRepository(context: Context) {
 
@@ -129,35 +141,38 @@ class LastfmRepository(context: Context) {
         get() = prefs.getBoolean(KEY_ENABLED, false)
         set(value) = prefs.edit { putBoolean(KEY_ENABLED, value) }
 
-    var apiKey: String
-        get() = prefs.getString(KEY_API_KEY, "").orEmpty()
-        set(value) = prefs.edit { putString(KEY_API_KEY, value) }
+    private var credentials: LastfmCredentials
+        get() = prefs.getString(KEY_CREDENTIALS, null)
+            ?.let { SecretStores.current?.decrypt(it) }
+            ?.toData<LastfmCredentials>()?.getOrNull()
+            ?: LastfmCredentials()
+        set(value) {
+            val plain = value.toJson()
+            prefs.edit {
+                putString(KEY_CREDENTIALS, SecretStores.current?.encrypt(plain) ?: plain)
+            }
+        }
 
-    var apiSecret: String
-        get() = prefs.getString(KEY_API_SECRET, "").orEmpty()
-        set(value) = prefs.edit { putString(KEY_API_SECRET, value) }
-
-    var username: String
-        get() = prefs.getString(KEY_USERNAME, "").orEmpty()
-        set(value) = prefs.edit { putString(KEY_USERNAME, value) }
-
-    var sessionKey: String
-        get() = prefs.getString(KEY_SESSION, "").orEmpty()
-        set(value) = prefs.edit { putString(KEY_SESSION, value) }
-
-    val isConnected: Boolean get() = sessionKey.isNotEmpty()
+    val username: String get() = credentials.username
+    val isConnected: Boolean get() = credentials.sessionKey.isNotEmpty()
 
     /** @return the account name that was connected. */
-    suspend fun connect(username: String, password: String): String {
+    suspend fun connect(
+        username: String, password: String, apiKey: String, apiSecret: String
+    ): String {
         val session = LastfmClient(apiKey, apiSecret).login(username.trim(), password)
-        this.username = session.name.ifEmpty { username.trim() }
-        sessionKey = session.key
+        credentials = LastfmCredentials(
+            apiKey = apiKey,
+            apiSecret = apiSecret,
+            username = session.name.ifEmpty { username.trim() },
+            sessionKey = session.key
+        )
         enabled = true
         return this.username
     }
 
     fun disconnect() {
-        sessionKey = ""
+        credentials = LastfmCredentials()
         enabled = false
     }
 
@@ -173,17 +188,16 @@ class LastfmRepository(context: Context) {
 
     private suspend fun submit(block: suspend (LastfmClient, String) -> LastfmStatus) {
         if (!enabled || !isConnected) return
-        val key = sessionKey
+        val credentials = credentials
         // Scrobbling must never surface errors to the user; it is best-effort.
-        runCatching { block(LastfmClient(apiKey, apiSecret), key) }
+        runCatching {
+            block(LastfmClient(credentials.apiKey, credentials.apiSecret), credentials.sessionKey)
+        }
     }
 
     companion object {
         const val KEY_ENABLED = "lastfm_enabled"
-        const val KEY_API_KEY = "api_key"
-        const val KEY_API_SECRET = "api_secret"
-        const val KEY_USERNAME = "username"
-        const val KEY_SESSION = "session"
+        const val KEY_CREDENTIALS = "lastfm_credentials"
     }
 }
 

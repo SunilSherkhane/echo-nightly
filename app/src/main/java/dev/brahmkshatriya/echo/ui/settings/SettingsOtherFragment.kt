@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.View
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -108,33 +109,6 @@ class SettingsOtherFragment : BaseSettingsFragment() {
                     addPreference(this)
                 }
 
-                EditTextPreference(context).apply {
-                    key = LastfmRepository.KEY_USERNAME
-                    title = getString(R.string.lastfm_username)
-                    summary = getString(R.string.lastfm_username)
-                    layoutResource = R.layout.preference
-                    isIconSpaceReserved = false
-                    addPreference(this)
-                }
-
-                EditTextPreference(context).apply {
-                    key = LastfmRepository.KEY_API_KEY
-                    title = getString(R.string.lastfm_api_key)
-                    summary = getString(R.string.lastfm_api_key_summary)
-                    layoutResource = R.layout.preference
-                    isIconSpaceReserved = false
-                    addPreference(this)
-                }
-
-                EditTextPreference(context).apply {
-                    key = LastfmRepository.KEY_API_SECRET
-                    title = getString(R.string.lastfm_api_secret)
-                    summary = getString(R.string.lastfm_api_secret)
-                    layoutResource = R.layout.preference
-                    isIconSpaceReserved = false
-                    addPreference(this)
-                }
-
                 TransitionPreference(context).apply {
                     key = "lastfm_connect"
                     title = getString(R.string.lastfm_connect)
@@ -168,27 +142,56 @@ class SettingsOtherFragment : BaseSettingsFragment() {
 
         private fun showLastfmConnectDialog() {
             val fragment = this
-            val input = EditText(fragment.requireContext()).apply {
-                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                hint = getString(R.string.lastfm_password)
+            val context = fragment.requireContext()
+            val hints = listOf(
+                R.string.lastfm_username to InputType.TYPE_CLASS_TEXT,
+                R.string.lastfm_password to
+                    (InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD),
+                R.string.lastfm_api_key to InputType.TYPE_CLASS_TEXT,
+                R.string.lastfm_api_secret to
+                    (InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
+            )
+            val fields = hints.map { (hint, type) ->
+                EditText(context).apply {
+                    inputType = type
+                    this.hint = getString(hint)
+                }
             }
-            MaterialAlertDialogBuilder(fragment.requireContext())
+            val (username, password, apiKey, apiSecret) = fields
+
+            val padding = (20 * resources.displayMetrics.density).toInt()
+            val container = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(padding, padding / 2, padding, 0)
+                fields.forEach { addView(it) }
+            }
+
+            MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.lastfm_connect)
-                .setView(input)
+                .setView(container)
                 .setPositiveButton(R.string.connect) { _, _ ->
-                    val repository = LastfmRepository(fragment.requireContext())
-                    val password = input.text.toString()
-                    if (password.isBlank()) return@setPositiveButton
+                    if (username.text.isNullOrBlank() || password.text.isNullOrBlank()) {
+                        Toast.makeText(
+                            context, getString(R.string.lastfm_failed), Toast.LENGTH_SHORT
+                        ).show()
+                        return@setPositiveButton
+                    }
+                    val repository = LastfmRepository(context)
                     fragment.lifecycleScope.launch {
                         val message = runCatching {
-                            repository.connect(repository.username, password)
+                            repository.connect(
+                                username.text.toString(),
+                                password.text.toString(),
+                                apiKey.text.toString(),
+                                apiSecret.text.toString()
+                            )
                         }.fold(
                             onSuccess = { fragment.getString(R.string.lastfm_connected, it) },
                             onFailure = {
                                 it.message ?: fragment.getString(R.string.lastfm_failed)
                             }
                         )
-                        Toast.makeText(fragment.requireContext(), message, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                     }
                 }
                 .setNegativeButton(R.string.cancel, null)
