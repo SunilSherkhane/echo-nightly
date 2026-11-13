@@ -132,6 +132,31 @@
     <string name="cache_size">Cache Size</string>
     <string name="cache_size_summary">Size in MB to cache audio and video</string>
 
+    <string name="audio_enhancements">Loudness &amp; Transitions</string>
+
+    <string name="loudness_normalization">Loudness Normalization</string>
+    <string name="loudness_normalization_summary">Even out the volume between tracks using ReplayGain or EBU R128</string>
+
+    <string name="loudness_mode">Normalization Mode</string>
+    <string name="loudness_mode_summary">Where the target loudness comes from</string>
+    <string-array name="loudness_modes">
+        <item>Auto (measured, then ReplayGain)</item>
+        <item>ReplayGain tags</item>
+        <item>EBU R128 measurement</item>
+    </string-array>
+
+    <string name="loudness_target">Target Loudness</string>
+    <string name="loudness_target_summary">Integrated loudness in LUFS. -14 matches most streaming services.</string>
+
+    <string name="loudness_preamp">Preamp</string>
+    <string name="loudness_preamp_summary">Extra gain in dB added on top of the correction</string>
+
+    <string name="crossfade">Crossfade</string>
+    <string name="crossfade_summary">Overlap the end of one track with the start of the next</string>
+
+    <string name="crossfade_duration">Crossfade Duration</string>
+    <string name="crossfade_duration_summary">How long the two tracks overlap, in milliseconds</string>
+
     <string name="version">Version</string>
     <string name="select_language">Select Language</string>
     <string name="system">System</string>

@@ -40,6 +40,13 @@ import dev.brahmkshatriya.echo.playback.listener.PlayerEventListener
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio
 import dev.brahmkshatriya.echo.playback.listener.ScrobbleListener
 import dev.brahmkshatriya.echo.playback.listener.TrackingListener
+import dev.brahmkshatriya.echo.playback.loudness.AudioEnhancementsListener
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeAudioProcessor
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeController
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessController
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessGainProvider
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessScanner
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessStore
 import dev.brahmkshatriya.echo.playback.renderer.PlayerBitmapLoader
 import dev.brahmkshatriya.echo.playback.renderer.RenderersFactory
 import dev.brahmkshatriya.echo.playback.source.StreamableMediaSource
@@ -79,6 +86,15 @@ class PlayerService : MediaLibraryService() {
     }
     private val effects by lazy { EffectsListener(exoPlayer, this, state.session) }
 
+    private val loudnessStore by lazy { LoudnessStore(this) }
+    private val gainProvider by lazy { LoudnessGainProvider() }
+    private val loudnessController by lazy {
+        LoudnessController(this, gainProvider, loudnessStore)
+    }
+    private val crossfadeProcessor by lazy { CrossfadeAudioProcessor() }
+    private val crossfadeController by lazy { CrossfadeController(this, crossfadeProcessor) }
+    private val loudnessScanner by lazy { LoudnessScanner(this, scope, loudnessStore) }
+
     private val downloader by inject<Downloader>()
     private val downloadFlow by lazy { downloader.flow }
 
@@ -115,6 +131,11 @@ class PlayerService : MediaLibraryService() {
             TrackingListener(player, scope, extensions, state.current, app.throwFlow)
         )
         player.addListener(effects)
+        player.addListener(
+            AudioEnhancementsListener(
+                this, loudnessController, crossfadeController, loudnessScanner
+            )
+        )
         app.settings.registerOnSharedPreferenceChangeListener(listener)
 
         val notificationProvider = DefaultMediaNotificationProvider.Builder(this)
@@ -163,7 +184,7 @@ class PlayerService : MediaLibraryService() {
         )
 
         ExoPlayer.Builder(this, factory)
-            .setRenderersFactory(RenderersFactory(this))
+            .setRenderersFactory(RenderersFactory(this, gainProvider, crossfadeProcessor))
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .setAudioAttributes(audioAttributes, true)

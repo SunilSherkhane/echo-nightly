@@ -1,15 +1,20 @@
 package dev.brahmkshatriya.echo.playback.renderer
 
 import android.content.Context
+import androidx.media3.common.audio.GainProcessor
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeAudioProcessor
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessGainProvider
 
 @androidx.annotation.OptIn(UnstableApi::class)
 class RenderersFactory(
-    context: Context
+    context: Context,
+    private val gainProvider: LoudnessGainProvider,
+    private val crossfade: CrossfadeAudioProcessor,
 ) : DefaultRenderersFactory(context) {
 
     override fun buildAudioSink(
@@ -25,12 +30,16 @@ class RenderersFactory(
             256,
         )
 
+        // Crossfade runs on raw decoded PCM before the loudness gain, so the
+        // overlap is mixed at the track's own level and then normalized.
         DefaultAudioSink.Builder(context)
             .setEnableFloatOutput(enableFloatOutput)
             .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
             .setAudioProcessorChain(
                 DefaultAudioSink.DefaultAudioProcessorChain(
-                    emptyArray(), silenceSkippingAudioProcessor, SonicAudioProcessor()
+                    arrayOf(crossfade, GainProcessor(gainProvider)),
+                    silenceSkippingAudioProcessor,
+                    SonicAudioProcessor()
                 )
             )
             .build()

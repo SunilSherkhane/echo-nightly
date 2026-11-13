@@ -17,6 +17,9 @@ import dev.brahmkshatriya.echo.playback.PlayerService.Companion.SKIP_SILENCE
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.UNMETERED_STREAM_QUALITY
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.streamQualities
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeAudioProcessor
+import dev.brahmkshatriya.echo.playback.loudness.CrossfadeController
+import dev.brahmkshatriya.echo.playback.loudness.LoudnessController
 import dev.brahmkshatriya.echo.playback.listener.PlayerRadio.Companion.AUTO_START_RADIO
 import dev.brahmkshatriya.echo.ui.common.FragmentUtils.openFragment
 import dev.brahmkshatriya.echo.ui.player.PlayerViewModel.Companion.KEEP_QUEUE
@@ -150,6 +153,82 @@ class SettingsPlayerFragment : BaseSettingsFragment() {
                     summary = getString(R.string.cache_size_summary)
                     isIconSpaceReserved = false
                     setDefaultValue(250)
+                    addPreference(this)
+                }
+            }
+
+            PreferenceCategory(context).apply {
+                title = getString(R.string.audio_enhancements)
+                key = "enhancements"
+                isIconSpaceReserved = false
+                layoutResource = R.layout.preference_category
+                screen.addPreference(this)
+
+                SwitchPreferenceCompat(context).apply {
+                    key = LoudnessController.KEY_ENABLED
+                    title = getString(R.string.loudness_normalization)
+                    summary = getString(R.string.loudness_normalization_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(false)
+                    addPreference(this)
+                }
+
+                MaterialListPreference(context).apply {
+                    key = LoudnessController.KEY_MODE
+                    title = getString(R.string.loudness_mode)
+                    summary = getString(R.string.loudness_mode_summary)
+                    entries = resources.getStringArray(R.array.loudness_modes)
+                    entryValues = LoudnessController.modes.toTypedArray()
+                    layoutResource = R.layout.preference
+                    isIconSpaceReserved = false
+                    setDefaultValue(LoudnessController.MODE_AUTO)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(
+                    context, LoudnessController.MIN_TARGET_LUFS,
+                    LoudnessController.MAX_TARGET_LUFS, allowOverride = true
+                ).apply {
+                    key = LoudnessController.KEY_TARGET
+                    title = getString(R.string.loudness_target)
+                    summary = getString(R.string.loudness_target_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(LoudnessController.DEFAULT_TARGET_LUFS)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(
+                    context, -LoudnessController.MAX_PREAMP_DB,
+                    LoudnessController.MAX_PREAMP_DB
+                ).apply {
+                    key = LoudnessController.KEY_PREAMP
+                    title = getString(R.string.loudness_preamp)
+                    summary = getString(R.string.loudness_preamp_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(0)
+                    addPreference(this)
+                }
+
+                SwitchPreferenceCompat(context).apply {
+                    key = CrossfadeController.KEY_ENABLED
+                    title = getString(R.string.crossfade)
+                    summary = getString(R.string.crossfade_summary)
+                    layoutResource = R.layout.preference_switch
+                    isIconSpaceReserved = false
+                    setDefaultValue(CrossfadeController.DEFAULT_ENABLED)
+                    addPreference(this)
+                }
+
+                MaterialSliderPreference(
+                    context, CrossfadeController.MIN_DURATION_MS,
+                    CrossfadeController.MAX_DURATION_MS
+                ).apply {
+                    key = CrossfadeController.KEY_DURATION
+                    title = getString(R.string.crossfade_duration)
+                    summary = getString(R.string.crossfade_duration_summary)
+                    isIconSpaceReserved = false
+                    setDefaultValue(CrossfadeAudioProcessor.DEFAULT_DURATION_MS)
                     addPreference(this)
                 }
             }
