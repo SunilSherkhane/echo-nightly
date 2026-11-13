@@ -65,7 +65,9 @@ object CoroutineUtils {
     ): ListenableFuture<T> {
         val future = SettableFuture.create<T>()
         launch(context) {
-            future.set(block())
+            // Always complete the future: an exception that escapes here would
+            // otherwise leave the returned ListenableFuture pending forever.
+            runCatching { future.set(block()) }.getOrElse { future.setException(it) }
         }
         return future
     }

@@ -17,6 +17,7 @@ import java.util.WeakHashMap
 class ExtensionParser(
     private val context: Context,
 ) {
+    private val verifier = ExtensionVerifier(context)
 
     fun getAllDynamically(
         type: ImportType,
@@ -76,6 +77,8 @@ class ExtensionParser(
     }
 
     private fun loadFrom(metadata: Metadata): ExtensionClient {
+        // Last line of defence: never hand an unverified APK to DexClassLoader.
+        verifier.verify(File(metadata.path), metadata.id)
         val dexLoader = DexLoader(metadata, context)
         val clazz = dexLoader.loadClass(metadata.className)
         return clazz.getConstructor().newInstance() as ExtensionClient

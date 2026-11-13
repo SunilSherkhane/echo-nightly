@@ -29,6 +29,7 @@
 
     <application
         android:name=".MainApplication"
+        android:allowBackup="false"
         android:appCategory="audio"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
