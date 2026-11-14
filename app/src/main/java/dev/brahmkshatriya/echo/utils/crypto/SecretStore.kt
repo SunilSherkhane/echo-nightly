@@ -46,10 +46,13 @@ class SecretStore(context: Context) {
         return generator.generateKey()
     }
 
-    /** @return ciphertext marked with [PREFIX], or [plain] if no key is available. */
-    fun encrypt(plain: String): String {
-        val key = key ?: return plain
+    /** @return ciphertext marked with [PREFIX], or null if encryption is unavailable. */
+    fun encrypt(plain: String): String? {
         if (plain.isEmpty()) return plain
+        val key = key ?: run {
+            Log.w("SecretStore", "Keystore unavailable, refusing to encrypt credentials")
+            return null
+        }
         return runCatching {
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, key)
@@ -57,8 +60,8 @@ class SecretStore(context: Context) {
             val encrypted = cipher.doFinal(plain.toByteArray(Charsets.UTF_8))
             PREFIX + Base64.encodeToString(iv + encrypted, Base64.NO_WRAP)
         }.getOrElse {
-            Log.w("SecretStore", "Encryption failed, storing plaintext", it)
-            plain
+            Log.w("SecretStore", "Encryption failed, refusing to store plaintext", it)
+            null
         }
     }
 

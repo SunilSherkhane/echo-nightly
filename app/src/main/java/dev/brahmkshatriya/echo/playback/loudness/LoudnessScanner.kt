@@ -1,6 +1,7 @@
 package dev.brahmkshatriya.echo.playback.loudness
 
 import android.content.Context
+import android.media.AudioFormat
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
@@ -9,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.nio.ByteOrder
 
 /**
  * Measures the integrated loudness of a local audio file with [EbuR128] and
@@ -91,7 +93,11 @@ class LoudnessScanner(
             }
 
             when (val outputIndex = codec.dequeueOutputBuffer(info, TIMEOUT_US)) {
-                MediaCodec.INFO_OUTPUT_FORMAT_CHANGED,
+                MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> if (isFloatPcm(codec.outputFormat)) {
+                    // The meter only understands 16-bit PCM; skip float output.
+                    return Double.NEGATIVE_INFINITY
+                }
+
                 MediaCodec.INFO_TRY_AGAIN_LATER,
                 MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> Unit
 
@@ -100,6 +106,9 @@ class LoudnessScanner(
                     if (buffer != null && info.size > 0) {
                         buffer.position(info.offset)
                         buffer.limit(info.offset + info.size)
+                        // Raw PCM is 16-bit signed in native byte order; pin it so
+                        // samples are not byte-swapped on a big-endian buffer.
+                        buffer.order(ByteOrder.nativeOrder())
                         val shortBuffer = buffer.asShortBuffer()
                         while (shortBuffer.hasRemaining()) {
                             val count = minOf(shortBuffer.remaining(), scratch.size)
@@ -115,6 +124,10 @@ class LoudnessScanner(
 
         return analyzer.finish()
     }
+
+    private fun isFloatPcm(format: MediaFormat): Boolean =
+        format.getInteger(MediaFormat.KEY_PCM_ENCODING, AudioFormat.ENCODING_PCM_16BIT) ==
+            AudioFormat.ENCODING_PCM_FLOAT
 
     private companion object {
         const val TIMEOUT_US = 10_000L

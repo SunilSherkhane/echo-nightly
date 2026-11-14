@@ -66,10 +66,11 @@ class LoginViewModel(
         if (users.isEmpty()) {
             app.messageFlow.emit(Message(app.context.getString(R.string.no_user_found)))
         } else {
-            val entities = users.map { it.toEntity(extensionType, extensionId!!) }
-            userDao.insertUsers(entities)
-            val user = entities.first()
-            userDao.setCurrentUser(user.toCurrentUser())
+            val entities = users.mapNotNull { it.toEntity(extensionType, extensionId!!) }
+            if (entities.isNotEmpty()) {
+                userDao.insertUsers(entities)
+                userDao.setCurrentUser(entities.first().toCurrentUser())
+            }
         }
         loading.value = false
         loadingOver.emit(Unit)
