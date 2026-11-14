@@ -20,6 +20,7 @@ import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
+import androidx.core.view.MenuItemCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -44,6 +45,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import com.google.android.material.slider.Slider
+import dev.brahmkshatriya.echo.MainActivity.Companion.isGlassStyle
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.common.models.EchoMediaItem
 import dev.brahmkshatriya.echo.common.models.Streamable
@@ -114,6 +116,7 @@ class PlayerFragment : Fragment() {
         configureOutline(binding.root)
         configureCollapsing(binding)
         configureColors()
+        configureGlassChrome()
         configurePlayerControls()
         configureBackgroundPlayerView()
     }
@@ -525,6 +528,7 @@ class PlayerFragment : Fragment() {
                 }
             }
             val colors = it ?: context.defaultPlayerColors()
+            val glass = context.isGlassStyle()
             val binding = binding!!
             adapter.onColorsUpdated()
 
@@ -564,8 +568,81 @@ class PlayerFragment : Fragment() {
                 // light mode (or light in dark mode).
                 trackSubtitle.setTextColor(colors.onBackground)
                 trackRepeat.iconTint = ColorStateList.valueOf(colors.onBackground)
+                if (glass) {
+                    // On the frost the day/night icon tint would clash with the
+                    // palette surface, so the controls follow the palette too.
+                    val onSurface = glassIconTint(colors.onBackground)
+                    trackHeart.buttonTintList = onSurface
+                    trackShuffle.buttonTintList = onSurface
+                    trackPlayPause.buttonTintList = onSurface
+                    trackPrevious.iconTint = onSurface
+                    trackNext.iconTint = onSurface
+                }
+            }
+
+            if (glass) {
+                val onSurface = glassIconTint(colors.onBackground)
+                binding.playerCollapsedContainer.run {
+                    collapsedTrackPlayPause.buttonTintList = onSurface
+                    playerClose.iconTint = onSurface
+                }
+                binding.expandedToolbar.setNavigationIconTint(colors.onBackground)
+                binding.expandedToolbar.menu.findItem(R.id.menu_more)?.let {
+                    MenuItemCompat.setIconTintList(it, onSurface)
+                }
             }
         }
+    }
+
+    /**
+     * Palette icon tint for the glass chrome. Keeps the stock disabled alpha
+     * so prev/next still dim when there is nothing to skip to.
+     */
+    private fun glassIconTint(color: Int): ColorStateList {
+        val disabled = (color and 0x00FFFFFF) or (0x60 shl 24)
+        return ColorStateList(
+            arrayOf(
+                intArrayOf(-android.R.attr.state_enabled),
+                intArrayOf(android.R.attr.state_enabled)
+            ),
+            intArrayOf(disabled, color)
+        )
+    }
+
+    /**
+     * Player chrome for the translucent styles.
+     *
+     * The toolbar is full-bleed, so it gets the corner-free bar drawable; the
+     * control panels float above the artwork, so they get the rounded
+     * strong-tier surface. Both carry the glass specular rim. The stock themes
+     * resolve both attrs to transparent, so the stock player is left untouched.
+     */
+    private fun configureGlassChrome() {
+        val activity = requireActivity()
+        if (!activity.isGlassStyle()) return
+        val binding = binding ?: return
+
+        val surfaceTa = activity.theme.obtainStyledAttributes(
+            intArrayOf(R.attr.playerBarBackground, R.attr.playerSurfaceBackground)
+        )
+        val bar = surfaceTa.getResourceId(0, 0)
+        val surface = surfaceTa.getResourceId(1, 0)
+        surfaceTa.recycle()
+
+        if (bar != 0) binding.expandedToolbar.setBackgroundResource(bar)
+        // The collapsed mini-player's surface lives on the track info bar: the
+        // controls pill is drawn on top of it, so frosting the pill would hide
+        // the title. The info bar picks the same attr up from its background.
+        if (surface != 0) binding.playerControls.root.setBackgroundResource(surface)
+
+        // The subtitle is the one control that is a plain TextView, so it has
+        // no ripple of its own.
+        val rippleTa = activity.theme.obtainStyledAttributes(
+            intArrayOf(android.R.attr.selectableItemBackground)
+        )
+        val ripple = rippleTa.getResourceId(0, 0)
+        rippleTa.recycle()
+        if (ripple != 0) binding.playerControls.trackSubtitle.setBackgroundResource(ripple)
     }
 
     private fun FragmentPlayerBinding.applyCurrent(item: MediaItem) {
@@ -588,10 +665,19 @@ class PlayerFragment : Fragment() {
             val artistNames = artists.joinToString(", ") { it.name }
             val span = SpannableString(artistNames)
 
+            // On glass the artist links sit on a runtime-palette surface, so
+            // they follow the palette instead of the day/night foreground.
+            val linkColor: (() -> Int)? = if (requireContext().isGlassStyle()) {
+                val fallback = trackArtist.context.defaultPlayerColors().onBackground
+                {
+                    uiViewModel.playerColors.value?.onBackground ?: fallback
+                }
+            } else null
+
             artists.forEach { artist ->
                 val start = artistNames.indexOf(artist.name)
                 val end = start + artist.name.length
-                val clickableSpan = SimpleItemSpan(trackArtist.context) {
+                val clickableSpan = SimpleItemSpan(trackArtist.context, linkColor) {
                     openItem(extId, artist)
                 }
                 runCatching {

@@ -8,6 +8,7 @@ import dev.brahmkshatriya.echo.R
 
 class SimpleItemSpan(
     val context: Context,
+    private val color: (() -> Int)? = null,
     private val onItemClicked: () -> Unit
 ) : ClickableSpan() {
 
@@ -18,8 +19,9 @@ class SimpleItemSpan(
     override fun updateDrawState(ds: TextPaint) {
         super.updateDrawState(ds)
         ds.isUnderlineText = false
-        context.run {
-            ds.color = resources.getColor(R.color.button_player, theme)
-        }
+        // Callers on a runtime-palette surface pass a provider so the link
+        // follows the palette instead of the day/night foreground.
+        ds.color = color?.invoke()
+            ?: context.resources.getColor(R.color.button_player, context.theme)
     }
 }
