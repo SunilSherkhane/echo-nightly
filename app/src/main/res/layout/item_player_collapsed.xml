@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Selectable"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/collapsed_cover_size">
+    android:layout_height="@dimen/collapsed_cover_size"
+    android:background="?attr/playerSurfaceBackground">
 
     <LinearLayout
         android:id="@+id/collapsedPlayerInfo"

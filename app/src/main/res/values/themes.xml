@@ -30,6 +30,11 @@
         <item name="echoBackground">?colorSurface</item>
         <item name="navBackground">?colorSurfaceContainer</item>
 
+        <!-- Player chrome surfaces. The translucent styles override these;
+             the stock themes keep the player's original surfaces. -->
+        <item name="playerBarBackground">@android:color/transparent</item>
+        <item name="playerSurfaceBackground">@android:color/transparent</item>
+
         <item name="itemCoverSize">96dp</item>
         <item name="itemCorner">8dp</item>
     </style>
@@ -69,6 +74,9 @@
         <item name="bottomSheetDialogTheme">@style/EchoGlassBottomSheetDialog</item>
         <item name="snackbarStyle">@style/EchoGlassSnackBar</item>
         <item name="snackbarTextViewStyle">@style/EchoGlassSnackBarText</item>
+        <!-- Player chrome: full-bleed corner-free bar + floating strong tier. -->
+        <item name="playerBarBackground">@drawable/glass_bar</item>
+        <item name="playerSurfaceBackground">@drawable/glass_surface_strong</item>
     </style>
 
     <style name="LiquidGlassBigCover" parent="LiquidGlass">
@@ -100,6 +108,9 @@
         <item name="bottomSheetDialogTheme">@style/EchoGlassmorphicBottomSheetDialog</item>
         <item name="snackbarStyle">@style/EchoGlassmorphicSnackBar</item>
         <item name="snackbarTextViewStyle">@style/EchoGlassmorphicSnackBarText</item>
+        <!-- Player chrome: white frost, same tiering as the liquid style. -->
+        <item name="playerBarBackground">@drawable/glassmorph_bar</item>
+        <item name="playerSurfaceBackground">@drawable/glassmorph_surface_strong</item>
     </style>
 
     <style name="GlassmorphicBigCover" parent="Glassmorphic">
