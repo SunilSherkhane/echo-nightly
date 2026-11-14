@@ -102,7 +102,8 @@ object WebViewUtils {
             if (target is WebViewRequest.Headers) target.interceptUrlRegex else null
         val timeout = target.maxTimeout
         val webView = this
-        val bridge = Bridge { isTrustedPage(webView, stopRegex) }
+        val pageUrl = PageUrlTracker()
+        val bridge = Bridge { isTrustedPage(pageUrl.url, stopRegex) }
         val requests = mutableListOf<NetworkRequest>()
         val timeoutJob = if (!skipTimeout) scope.launch {
             delay(timeout)
@@ -117,6 +118,7 @@ object WebViewUtils {
         } else null
         webViewClient = object : RequestInspectorWebViewClient(this@load) {
             override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                pageUrl.url = url
                 callback.isEnabled = canGoBack()
             }
 
@@ -255,6 +257,12 @@ object WebViewUtils {
         callback.isEnabled = false
     }
 
+    /** Current page URL, written on the main thread and read from the JS bridge thread. */
+    private class PageUrlTracker {
+        @Volatile
+        var url: String? = null
+    }
+
     @Suppress("unused")
     class Bridge(private val isTrusted: () -> Boolean) {
         var onError: ((Throwable) -> Unit)? = null
@@ -273,9 +281,8 @@ object WebViewUtils {
         }
     }
 
-    private fun isTrustedPage(view: WebView, stopRegex: Regex): Boolean {
-        val url = runCatching { view.url }.getOrNull() ?: return false
-        return stopRegex.find(url) != null
+    private fun isTrustedPage(url: String?, stopRegex: Regex): Boolean {
+        return url != null && stopRegex.find(url) != null
     }
 
     fun FragmentActivity.onWebViewIntent(

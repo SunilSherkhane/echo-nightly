@@ -38,8 +38,6 @@ data class LastfmStatus(
  */
 class LastfmClient(private val apiKey: String, private val apiSecret: String) {
 
-    private val client = OkHttpClient()
-
     /** Exchanges a username + password for a long-lived session key. */
     suspend fun login(username: String, password: String): LastfmSession {
         val status = post(
@@ -114,6 +112,9 @@ class LastfmClient(private val apiKey: String, private val apiSecret: String) {
 
     companion object {
         private const val ENDPOINT = "https://ws.audioscrobbler.com/2.0/"
+
+        /** Shared by every client so scrobbles reuse one connection/thread pool. */
+        private val client = OkHttpClient()
     }
 }
 
@@ -148,8 +149,9 @@ class LastfmRepository(context: Context) {
             ?: LastfmCredentials()
         set(value) {
             val plain = value.toJson()
+            val encrypted = SecretStores.current?.encrypt(plain) ?: return
             prefs.edit {
-                putString(KEY_CREDENTIALS, SecretStores.current?.encrypt(plain) ?: plain)
+                putString(KEY_CREDENTIALS, encrypted)
             }
         }
 

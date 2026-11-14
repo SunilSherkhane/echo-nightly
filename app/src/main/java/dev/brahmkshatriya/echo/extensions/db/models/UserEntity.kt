@@ -21,8 +21,10 @@ data class UserEntity(
     }
 
     companion object {
-        fun User.toEntity(type: ExtensionType, clientId: String) =
-            UserEntity(type, clientId, id, SecretStores.current?.encrypt(toJson()) ?: toJson())
+        fun User.toEntity(type: ExtensionType, clientId: String): UserEntity? {
+            val encrypted = SecretStores.current?.encrypt(toJson()) ?: return null
+            return UserEntity(type, clientId, id, encrypted)
+        }
 
         fun UserEntity.toCurrentUser() =
             CurrentUser(type, extId, id)
